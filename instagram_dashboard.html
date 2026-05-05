@@ -282,6 +282,26 @@ function calcDeltas(data) {
 function renderMetrics() {
   const totals=calcTotals(), deltas=calcDeltas();
   const grid=document.getElementById('metrics-grid'); grid.innerHTML='';
+
+  // 팔로워 카드 (followerData에서 최신 마감 팔로워 표시)
+  const sortedF = [...followerData].sort((a,b)=>b.weekStart.localeCompare(a.weekStart));
+  const latestF = sortedF[0] || null;
+  const currFollowers = latestF ? (latestF.endFollowers||0) : 0;
+  const prevFollowers = sortedF[1] ? (sortedF[1].endFollowers||0) : (latestF ? latestF.startFollowers||0 : 0);
+  const fDiff = currFollowers - prevFollowers;
+  const fRate = prevFollowers > 0 ? Math.round(fDiff/prevFollowers*100) : 0;
+  const fCard = document.createElement('div');
+  fCard.className = 'metric-card';
+  fCard.style.borderColor = '#cc2366';
+  fCard.innerHTML = `
+    <div class="metric-label">현재 팔로워</div>
+    <div class="metric-value">${currFollowers>=10000?Math.round(currFollowers/1000)+'K':currFollowers.toLocaleString()}</div>
+    <div class="metric-delta ${fDiff>=0?'delta-up':'delta-down'}">${fDiff>=0?'▲':'▼'} ${Math.abs(fRate)}% 전주 대비</div>
+    <div style="font-size:10px;color:#aaa;margin-top:2px;">주단위 분석 탭에서 입력</div>
+  `;
+  fCard.onclick = () => { document.querySelector('[onclick*="weekly"]').click(); };
+  grid.appendChild(fCard);
+
   METRICS.forEach(m => {
     const delta=deltas[m.key], card=document.createElement('div');
     card.className='metric-card'+(selectedMetric===m.key?' selected':'');
@@ -431,6 +451,7 @@ function updateFollower(i, key, val) {
   if(target) target[key] = val;
   renderFollowerTable();
   renderFollowerChart();
+  renderMetrics(); // 상단 팔로워 카드 업데이트
 }
 
 function addFollowerRow() {
@@ -447,6 +468,7 @@ function addFollowerRow() {
   followerData.push({ weekStart: newDate.toISOString().slice(0,10), startFollowers: newStart, endFollowers: newStart });
   renderFollowerTable();
   renderFollowerChart();
+  renderMetrics();
 }
 
 function renderFollowerChart() {
