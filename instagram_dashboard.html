@@ -142,7 +142,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>날짜</th><th>유형</th><th>콘텐츠 제목</th><th>조회수</th><th>도달계정</th><th>좋아요</th><th>저장</th><th>공유</th><th>프로필방문</th><th>외부링크클릭</th><th>팔로우</th></tr></thead>
+          <thead><tr><th>날짜</th><th>유형</th><th>콘텐츠 제목</th><th>조회수</th><th>도달계정</th><th>좋아요</th><th>저장</th><th>공유</th><th>프로필방문</th><th>외부링크클릭</th></tr></thead>
           <tbody id="table-body"></tbody>
         </table>
       </div>
@@ -181,6 +181,23 @@
         <canvas id="weekTypeChart" role="img" aria-label="주간 콘텐츠 유형별 조회수"></canvas>
       </div>
     </div>
+
+    <!-- 팔로워 주단위 입력 -->
+    <div class="chart-box" style="margin-bottom:1rem;">
+      <div class="chart-header">
+        <span class="chart-title">📈 팔로워 현황 (주단위 직접 입력)</span>
+        <button class="add-row-btn" onclick="addFollowerRow()">+ 주 추가</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>주 시작일</th><th>주차</th><th>시작 팔로워</th><th>마감 팔로워</th><th>증감</th><th>증감률</th></tr></thead>
+          <tbody id="follower-table-body"></tbody>
+        </table>
+      </div>
+      <div style="position:relative;width:100%;height:200px;margin-top:1rem;">
+        <canvas id="followerChart" role="img" aria-label="팔로워 추이 차트"></canvas>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -194,20 +211,24 @@ const METRICS = [
   { key:'shares',       label:'공유',          color:'#BA7517', fmt: v => v.toLocaleString() },
   { key:'profile_visit',label:'프로필 방문',   color:'#534AB7', fmt: v => v.toLocaleString() },
   { key:'link_click',   label:'외부링크 클릭', color:'#0E7A6E', fmt: v => v.toLocaleString() },
-  { key:'follow',       label:'팔로우',        color:'#C2410C', fmt: v => '+'+v.toLocaleString() },
 ];
 const TYPES = ['제품 큐레이션','프로모션','공간 및 라이프스타일'];
 const TYPE_COLORS = ['#cc2366','#185FA5','#BA7517'];
 
 let tableData = [
-  { date:'2026-04-28', type:'공간 및 라이프스타일', title:'훌쩍 떠나고픈 이번 주말. 쉬어가는 무브먼트 스테이 4',          views:20593, reach:10626, likes:42,  saves:66,  shares:29, profile_visit:57,  link_click:24,  follow:3  },
-  { date:'2026-04-29', type:'공간 및 라이프스타일', title:'제주의 자연 속에서 취향을 마주하며 앉는다는 것',               views:12189, reach:4795,  likes:31,  saves:8,   shares:0,  profile_visit:0,   link_click:0,   follow:0  },
-  { date:'2026-04-29', type:'프로모션',             title:'매직볼트 베스트셀러, 세컨드마켓 리퍼브세일 오픈',             views:28024, reach:13036, likes:34,  saves:58,  shares:41, profile_visit:96,  link_click:287, follow:3  },
-  { date:'2026-04-30', type:'프로모션',             title:'4월 5주차 온라인 세컨드마켓 NEW IN',                          views:15494, reach:6630,  likes:20,  saves:13,  shares:7,  profile_visit:36,  link_click:17,  follow:0  },
-  { date:'2026-04-30', type:'제품 큐레이션',        title:'비건 발효 음식, 차와 와인 모두 즐길 수 있는 퍼멘츠 한남 오픈', views:29658, reach:10917, likes:248, saves:112, shares:88, profile_visit:49,  link_click:1,   follow:14 },
-  { date:'2026-05-01', type:'공간 및 라이프스타일', title:'오사카 헤어디자이너의 집에는 어떤 가구가 있을까?',             views:22601, reach:11298, likes:72,  saves:70,  shares:6,  profile_visit:51,  link_click:8,   follow:0  },
-  { date:'2026-05-02', type:'제품 큐레이션',        title:'큐브를 조립하듯 자유롭게, 파사드 쉘프 모듈 가이드',           views:14251, reach:6280,  likes:17,  saves:21,  shares:3,  profile_visit:21,  link_click:7,   follow:1  },
-  { date:'2026-05-03', type:'제품 큐레이션',        title:'May for Me! 나에게 선물하는 자리 하나',                       views:17775, reach:7675,  likes:42,  saves:64,  shares:20, profile_visit:34,  link_click:6,   follow:0  },
+  { date:'2026-04-28', type:'공간 및 라이프스타일', title:'훌쩍 떠나고픈 이번 주말. 쉬어가는 무브먼트 스테이 4',           views:20593, reach:10626, likes:42,  saves:66,  shares:29, profile_visit:57,  link_click:24  },
+  { date:'2026-04-29', type:'공간 및 라이프스타일', title:'제주의 자연 속에서 취향을 마주하며 앉는다는 것',                views:12189, reach:4795,  likes:31,  saves:8,   shares:0,  profile_visit:0,   link_click:0   },
+  { date:'2026-04-29', type:'프로모션',             title:'매직볼트 베스트셀러, 세컨드마켓 리퍼브세일 오픈',              views:28024, reach:13036, likes:34,  saves:58,  shares:41, profile_visit:96,  link_click:287 },
+  { date:'2026-04-30', type:'프로모션',             title:'4월 5주차 온라인 세컨드마켓 NEW IN',                           views:15494, reach:6630,  likes:20,  saves:13,  shares:7,  profile_visit:36,  link_click:17  },
+  { date:'2026-04-30', type:'제품 큐레이션',        title:'비건 발효 음식, 차와 와인 모두 즐길 수 있는 퍼멘츠 한남 오픈',  views:29658, reach:10917, likes:248, saves:112, shares:88, profile_visit:49,  link_click:1   },
+  { date:'2026-05-01', type:'공간 및 라이프스타일', title:'오사카 헤어디자이너의 집에는 어떤 가구가 있을까?',              views:22601, reach:11298, likes:72,  saves:70,  shares:6,  profile_visit:51,  link_click:8   },
+  { date:'2026-05-02', type:'제품 큐레이션',        title:'큐브를 조립하듯 자유롭게, 파사드 쉘프 모듈 가이드',            views:14251, reach:6280,  likes:17,  saves:21,  shares:3,  profile_visit:21,  link_click:7   },
+  { date:'2026-05-03', type:'제품 큐레이션',        title:'May for Me! 나에게 선물하는 자리 하나',                        views:17775, reach:7675,  likes:42,  saves:64,  shares:20, profile_visit:34,  link_click:6   },
+];
+
+// 주단위 팔로워 직접 입력 데이터 { weekStart, startFollowers, endFollowers }
+let followerData = [
+  { weekStart:'2026-04-27', startFollowers:12400, endFollowers:12521 },
 ];
 
 let selectedMetric = 'views';
@@ -293,7 +314,7 @@ function renderTypeChart() {
 function renderEngageChart() {
   const t=calcTotals();
   if(engChart) engChart.destroy();
-  engChart=new Chart(document.getElementById('engageChart'),{type:'bar',data:{labels:['좋아요','저장','공유','프로필방문','링크클릭','팔로우'],datasets:[{data:[t.likes,t.saves,t.shares,t.profile_visit,t.link_click,t.follow],backgroundColor:['#A32D2D','#1D9E75','#BA7517','#534AB7','#0E7A6E','#C2410C'],borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
+  engChart=new Chart(document.getElementById('engageChart'),{type:'bar',data:{labels:['좋아요','저장','공유','프로필방문','링크클릭'],datasets:[{data:[t.likes,t.saves,t.shares,t.profile_visit,t.link_click],backgroundColor:['#A32D2D','#1D9E75','#BA7517','#534AB7','#0E7A6E'],borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
 }
 
 function renderTable() {
@@ -301,13 +322,13 @@ function renderTable() {
   tableData.forEach((row,i)=>{
     const tc=row.type==='제품 큐레이션'?'tag-product':row.type==='프로모션'?'tag-promo':'tag-lifestyle';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input value="${row.date}" onchange="updateCell(${i},'date',this.value)" style="width:95px"></td><td><select onchange="updateCell(${i},'type',this.value)" style="background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit;outline:none;">${TYPES.map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}</select></td><td><input value="${row.title||''}" onchange="updateCell(${i},'title',this.value)" style="width:160px"></td><td><input type="number" value="${row.views}" onchange="updateCell(${i},'views',+this.value)"></td><td><input type="number" value="${row.reach}" onchange="updateCell(${i},'reach',+this.value)"></td><td><input type="number" value="${row.likes}" onchange="updateCell(${i},'likes',+this.value)"></td><td><input type="number" value="${row.saves}" onchange="updateCell(${i},'saves',+this.value)"></td><td><input type="number" value="${row.shares}" onchange="updateCell(${i},'shares',+this.value)"></td><td><input type="number" value="${row.profile_visit||0}" onchange="updateCell(${i},'profile_visit',+this.value)"></td><td><input type="number" value="${row.link_click||0}" onchange="updateCell(${i},'link_click',+this.value)"></td><td><input type="number" value="${row.follow||0}" onchange="updateCell(${i},'follow',+this.value)"></td>`;
+    tr.innerHTML=`<td><input value="${row.date}" onchange="updateCell(${i},'date',this.value)" style="width:95px"></td><td><select onchange="updateCell(${i},'type',this.value)" style="background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit;outline:none;">${TYPES.map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}</select></td><td><input value="${row.title||''}" onchange="updateCell(${i},'title',this.value)" style="width:160px"></td><td><input type="number" value="${row.views}" onchange="updateCell(${i},'views',+this.value)"></td><td><input type="number" value="${row.reach}" onchange="updateCell(${i},'reach',+this.value)"></td><td><input type="number" value="${row.likes}" onchange="updateCell(${i},'likes',+this.value)"></td><td><input type="number" value="${row.saves}" onchange="updateCell(${i},'saves',+this.value)"></td><td><input type="number" value="${row.shares}" onchange="updateCell(${i},'shares',+this.value)"></td><td><input type="number" value="${row.profile_visit||0}" onchange="updateCell(${i},'profile_visit',+this.value)"></td><td><input type="number" value="${row.link_click||0}" onchange="updateCell(${i},'link_click',+this.value)"></td>`;
     tbody.appendChild(tr);
   });
 }
 
 function updateCell(i,key,val){ tableData[i][key]=val; renderAll(); if(key==='type'||key==='date') renderTable(); }
-function addRow(){ tableData.push({date:new Date().toISOString().slice(0,10),type:'제품 큐레이션',title:'',views:0,reach:0,likes:0,saves:0,shares:0,profile_visit:0,link_click:0,follow:0}); renderTable(); renderAll(); }
+function addRow(){ tableData.push({date:new Date().toISOString().slice(0,10),type:'제품 큐레이션',title:'',views:0,reach:0,likes:0,saves:0,shares:0,profile_visit:0,link_click:0}); renderTable(); renderAll(); }
 
 // 주단위 뷰
 function renderWeekTabs() {
@@ -365,7 +386,7 @@ function renderWeekView() {
   if(!weeks.length) return;
   currentWeekIdx=Math.max(0,Math.min(currentWeekIdx,weeks.length-1));
   document.getElementById('week-label').textContent=formatWeekLabel(weeks[currentWeekIdx]);
-  renderWeekTabs(); renderWeekSummary(); renderWeekTrendChart(); renderWeekCompareChart(); renderWeekTypeChart();
+  renderWeekTabs(); renderWeekSummary(); renderWeekTrendChart(); renderWeekCompareChart(); renderWeekTypeChart(); renderFollowerTable(); renderFollowerChart();
 }
 
 function prevWeek(){ if(currentWeekIdx>0){currentWeekIdx--;renderWeekView();} }
@@ -380,11 +401,87 @@ function switchView(view, btn) {
   if(view==='weekly'){ currentWeekIdx=getWeeks().length-1; renderWeekView(); }
 }
 
+// 팔로워 주단위 기능
+let followerChart;
+
+function renderFollowerTable() {
+  const tbody = document.getElementById('follower-table-body');
+  tbody.innerHTML = '';
+  const sorted = [...followerData].sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
+  sorted.forEach((row, i) => {
+    const diff = (row.endFollowers||0) - (row.startFollowers||0);
+    const rate = row.startFollowers > 0 ? (diff/row.startFollowers*100).toFixed(1) : '-';
+    const diffColor = diff >= 0 ? '#1D9E75' : '#D85A30';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${row.weekStart}" onchange="updateFollower(${i},'weekStart',this.value)" style="width:100px"></td>
+      <td style="color:#888;font-size:12px;">${formatWeekLabel(row.weekStart)}</td>
+      <td><input type="number" value="${row.startFollowers||0}" onchange="updateFollower(${i},'startFollowers',+this.value)" style="width:80px"></td>
+      <td><input type="number" value="${row.endFollowers||0}" onchange="updateFollower(${i},'endFollowers',+this.value)" style="width:80px"></td>
+      <td style="color:${diffColor};font-weight:600;">${diff>=0?'+':''}${diff.toLocaleString()}</td>
+      <td style="color:${diffColor};">${rate !== '-' ? (diff>=0?'▲':'▼')+' '+Math.abs(rate)+'%' : '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateFollower(i, key, val) {
+  const sorted = [...followerData].sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
+  const target = followerData.find(r=>r.weekStart===sorted[i].weekStart);
+  if(target) target[key] = val;
+  renderFollowerTable();
+  renderFollowerChart();
+}
+
+function addFollowerRow() {
+  const weeks = getWeeks();
+  const lastWeek = followerData.length > 0
+    ? [...followerData].sort((a,b)=>b.weekStart.localeCompare(a.weekStart))[0]
+    : null;
+  const newStart = lastWeek ? lastWeek.endFollowers || 0 : 0;
+  // 다음 주 월요일 계산
+  let newDate = new Date();
+  const day = newDate.getDay();
+  const diff = day===0?-6:1-day;
+  newDate.setDate(newDate.getDate()+diff);
+  followerData.push({ weekStart: newDate.toISOString().slice(0,10), startFollowers: newStart, endFollowers: newStart });
+  renderFollowerTable();
+  renderFollowerChart();
+}
+
+function renderFollowerChart() {
+  const sorted = [...followerData].sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
+  if(followerChart) followerChart.destroy();
+  if(!sorted.length) return;
+  const labels = sorted.map(r=>formatWeekLabel(r.weekStart).replace(/\d{4}년 /,''));
+  const endData = sorted.map(r=>r.endFollowers||0);
+  const diffData = sorted.map(r=>(r.endFollowers||0)-(r.startFollowers||0));
+  followerChart = new Chart(document.getElementById('followerChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { type:'line', label:'마감 팔로워', data:endData, borderColor:'#185FA5', backgroundColor:'#185FA522', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#185FA5', yAxisID:'y' },
+        { type:'bar',  label:'주간 증감',   data:diffData, backgroundColor: diffData.map(v=>v>=0?'#1D9E7588':'#D85A3088'), borderRadius:4, yAxisID:'y2' }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ font:{size:11}, boxWidth:10 } } },
+      scales: {
+        x: { grid:{display:false}, ticks:{font:{size:10}} },
+        y: { position:'left', grid:{color:'rgba(128,128,128,0.1)'}, ticks:{font:{size:11}, callback:v=>v>=1000?Math.round(v/1000)+'K':v} },
+        y2: { position:'right', grid:{display:false}, ticks:{font:{size:11}, callback:v=>(v>=0?'+':'')+v} }
+      }
+    }
+  });
+}
+
 function renderAll(){ renderMetrics(); renderTrendChart(); renderTypeChart(); renderEngageChart(); }
 
 function exportCSV() {
-  const headers=['날짜','유형','콘텐츠 제목','조회수','도달계정','좋아요','저장','공유','프로필방문','외부링크클릭','팔로우'];
-  const rows=tableData.map(r=>[r.date,r.type,r.title||'',r.views,r.reach,r.likes,r.saves,r.shares,r.profile_visit||0,r.link_click||0,r.follow||0].join(','));
+  const headers=['날짜','유형','콘텐츠 제목','조회수','도달계정','좋아요','저장','공유','프로필방문','외부링크클릭'];
+  const rows=tableData.map(r=>[r.date,r.type,r.title||'',r.views,r.reach,r.likes,r.saves,r.shares,r.profile_visit||0,r.link_click||0].join(','));
   const csv=[headers.join(','),...rows].join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='instagram_dashboard.csv'; a.click();
@@ -392,6 +489,8 @@ function exportCSV() {
 
 renderAll();
 renderTable();
+renderFollowerTable();
+renderFollowerChart();
 </script>
 </body>
 </html>
