@@ -105,6 +105,8 @@
         <button class="date-tab" onclick="switchView('weekly',this)">주단위 분석</button>
       </div>
       <button class="save-btn" onclick="exportCSV()">CSV 내보내기</button>
+      <button class="save-btn" style="color:#D85A30;border-color:#D85A30;" onclick="resetData()">초기화</button>
+      <span id="save-status" style="font-size:11px;color:#1D9E75;"></span>
     </div>
   </div>
 
@@ -509,6 +511,46 @@ function exportCSV() {
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='instagram_dashboard.csv'; a.click();
 }
 
+function saveData() {
+  try {
+    localStorage.setItem('ig_tableData', JSON.stringify(tableData));
+    localStorage.setItem('ig_followerData', JSON.stringify(followerData));
+    const el = document.getElementById('save-status');
+    if(el){ el.textContent = '✓ 자동 저장됨'; setTimeout(()=>{ el.textContent=''; }, 2000); }
+  } catch(e) { console.warn('저장 실패:', e); }
+}
+
+function loadData() {
+  try {
+    const t = localStorage.getItem('ig_tableData');
+    const f = localStorage.getItem('ig_followerData');
+    if(t) tableData = JSON.parse(t);
+    if(f) followerData = JSON.parse(f);
+  } catch(e) { console.warn('불러오기 실패:', e); }
+}
+
+// 데이터 변경 시 자동 저장
+const _updateCell = updateCell;
+updateCell = function(i, key, val) { _updateCell(i, key, val); saveData(); };
+
+const _updateFollower = updateFollower;
+updateFollower = function(i, key, val) { _updateFollower(i, key, val); saveData(); };
+
+const _addRow = addRow;
+addRow = function() { _addRow(); saveData(); };
+
+const _addFollowerRow = addFollowerRow;
+addFollowerRow = function() { _addFollowerRow(); saveData(); };
+
+// 초기화 버튼
+function resetData() {
+  if(!confirm('저장된 모든 데이터를 초기화할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
+  localStorage.removeItem('ig_tableData');
+  localStorage.removeItem('ig_followerData');
+  location.reload();
+}
+
+loadData();
 renderAll();
 renderTable();
 renderFollowerTable();
