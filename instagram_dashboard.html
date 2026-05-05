@@ -13,11 +13,16 @@
       .chart-box { background: #222; border-color: #333; }
       table th { color: #aaa; border-color: #333; }
       table td { border-color: #333; }
-      td input { color: #f0f0f0; }
+      td input, td select { color: #f0f0f0; }
       .date-tab { border-color: #444; color: #aaa; }
-      .date-tab.active { background: #333; color: #f0f0f0; }
+      .date-tab.active { background: #fff; color: #111; border-color: #fff; }
+      .week-tab { border-color: #444; color: #aaa; background: #2a2a2a; }
+      .week-tab.active { background: #cc2366; color: #fff; border-color: #cc2366; }
+      .week-nav-btn { border-color: #444; color: #ccc; background: #2a2a2a; }
+      .week-nav-btn:hover { background: #333; }
       .save-btn { border-color: #444; color: #f0f0f0; }
       .save-btn:hover { background: #333; }
+      .week-summary { background: #2a2a2a; border-color: #444; }
     }
     .dash { max-width: 1000px; margin: 0 auto; }
     .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
@@ -26,9 +31,9 @@
     .ig-icon svg { width: 20px; height: 20px; fill: white; }
     .title { font-size: 20px; font-weight: 600; }
     .subtitle { font-size: 13px; color: #888; }
-    .date-tabs { display: flex; gap: 4px; }
-    .date-tab { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #ddd; background: transparent; cursor: pointer; color: #666; }
-    .date-tab.active { background: #eee; color: #111; border-color: #ccc; font-weight: 500; }
+    .view-tabs { display: flex; gap: 4px; }
+    .date-tab { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #ddd; background: transparent; cursor: pointer; color: #666; transition: all .15s; }
+    .date-tab.active { background: #111; color: #fff; border-color: #111; font-weight: 500; }
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
     .metric-card { background: #f0f0f0; border-radius: 10px; padding: 1rem; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
     .metric-card:hover { border-color: #ccc; }
@@ -54,21 +59,36 @@
     td { padding: 8px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
     td input { background: transparent; border: none; font-size: 13px; width: 80px; font-family: inherit; outline: none; }
     td input:focus { border-bottom: 1.5px solid #cc2366; }
-    .tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
-    .tag-product  { background: #EEEDFE; color: #3C3489; }
-    .tag-promo    { background: #E1F5EE; color: #085041; }
+    .tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+    .tag-product   { background: #EEEDFE; color: #3C3489; }
+    .tag-promo     { background: #E1F5EE; color: #085041; }
     .tag-lifestyle { background: #FAECE7; color: #712B13; }
     .save-btn { font-size: 12px; padding: 6px 16px; border-radius: 8px; border: 1px solid #ccc; background: transparent; cursor: pointer; }
     .save-btn:hover { background: #f0f0f0; }
     .bottom-bar { display: flex; justify-content: flex-end; margin-top: 12px; gap: 8px; }
     .export-btn { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #cc2366; color: #cc2366; background: transparent; cursor: pointer; }
     .export-btn:hover { background: #fdf0f5; }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+    .week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .week-nav-btn { font-size: 13px; padding: 6px 16px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+    .week-nav-btn:hover { background: #f5f5f5; }
+    .week-label { font-size: 14px; font-weight: 600; flex: 1; text-align: center; }
+    .week-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .week-tab { font-size: 11px; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; color: #666; white-space: nowrap; transition: all .15s; }
+    .week-tab.active { background: #cc2366; color: #fff; border-color: #cc2366; font-weight: 500; }
+    .week-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 10px; margin-bottom: 1.5rem; background: #f8f8f8; border-radius: 12px; padding: 1rem; border: 1px solid #eee; }
+    .week-stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .week-stat-val { font-size: 20px; font-weight: 600; }
+    .week-stat-delta { font-size: 11px; margin-top: 2px; }
+    .week-compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+    @media (max-width: 600px) { .week-compare-row { grid-template-columns: 1fr; } }
+    .no-data { text-align: center; padding: 2rem; font-size: 13px; color: #aaa; }
   </style>
 </head>
 <body>
 <div class="dash">
 
-  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <div class="ig-icon">
@@ -76,244 +96,302 @@
       </div>
       <div>
         <div class="title">인스타그램 퍼포먼스</div>
-        <div class="subtitle" id="date-label">최근 7일</div>
+        <div class="subtitle" id="date-label">전체 데이터</div>
       </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <div class="date-tabs">
-        <button class="date-tab active" onclick="setRange(this,'7일')">7일</button>
-        <button class="date-tab" onclick="setRange(this,'30일')">30일</button>
-        <button class="date-tab" onclick="setRange(this,'90일')">90일</button>
+      <div class="view-tabs">
+        <button class="date-tab active" onclick="switchView('overall',this)">전체</button>
+        <button class="date-tab" onclick="switchView('weekly',this)">주단위 분석</button>
       </div>
-      <button class="save-btn">내보내기</button>
+      <button class="save-btn" onclick="exportCSV()">CSV 내보내기</button>
     </div>
   </div>
 
-  <!-- Metric Cards -->
-  <div class="metrics-grid" id="metrics-grid"></div>
-
-  <!-- Charts -->
-  <div class="chart-row">
-    <div class="chart-box full">
+  <!-- 전체 뷰 -->
+  <div id="panel-overall" class="view-panel active">
+    <div class="metrics-grid" id="metrics-grid"></div>
+    <div class="chart-row">
+      <div class="chart-box full">
+        <div class="chart-header">
+          <span class="chart-title">주요 지표 추이</span>
+          <div class="legend" id="chart-legend"></div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="trendChart" role="img" aria-label="주요 지표 추이 차트"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-header"><span class="chart-title">콘텐츠 유형별 비중</span></div>
+        <div id="type-legend" class="legend" style="margin-bottom:8px;"></div>
+        <div style="position:relative;width:100%;height:160px;">
+          <canvas id="typeChart" role="img" aria-label="콘텐츠 유형별 비중 차트"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-header"><span class="chart-title">참여 유형 분포</span></div>
+        <div style="position:relative;width:100%;height:180px;">
+          <canvas id="engageChart" role="img" aria-label="참여 유형 분포 차트"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="chart-box">
       <div class="chart-header">
-        <span class="chart-title">주요 지표 추이</span>
-        <div class="legend" id="chart-legend"></div>
+        <span class="chart-title">게시물 데이터 입력</span>
+        <button class="add-row-btn" onclick="addRow()">+ 행 추가</button>
       </div>
-      <div style="position:relative; width:100%; height:200px;">
-        <canvas id="trendChart" role="img" aria-label="주요 지표 주간 추이 차트"></canvas>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>날짜</th><th>유형</th><th>조회수</th><th>팔로워 증가</th><th>좋아요</th><th>저장</th><th>공유</th><th>댓글</th><th>도달</th></tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
       </div>
-    </div>
-    <div class="chart-box">
-      <div class="chart-header"><span class="chart-title">콘텐츠 유형별 비중</span></div>
-      <div id="type-legend" class="legend" style="margin-bottom:8px;"></div>
-      <div style="position:relative; width:100%; height:160px;">
-        <canvas id="typeChart" role="img" aria-label="콘텐츠 유형별 비중 차트"></canvas>
-      </div>
-    </div>
-    <div class="chart-box">
-      <div class="chart-header"><span class="chart-title">참여 유형 분포</span></div>
-      <div style="position:relative; width:100%; height:180px;">
-        <canvas id="engageChart" role="img" aria-label="참여 유형 분포 차트"></canvas>
+      <div class="bottom-bar">
+        <button class="export-btn" onclick="exportCSV()">CSV 내보내기</button>
       </div>
     </div>
   </div>
 
-  <!-- Data Table -->
-  <div class="chart-box">
-    <div class="chart-header">
-      <span class="chart-title">게시물 데이터 입력</span>
-      <button class="add-row-btn" onclick="addRow()">+ 행 추가</button>
+  <!-- 주단위 분석 뷰 -->
+  <div id="panel-weekly" class="view-panel">
+    <div class="week-nav">
+      <button class="week-nav-btn" onclick="prevWeek()">◀ 이전 주</button>
+      <span class="week-label" id="week-label">-</span>
+      <button class="week-nav-btn" onclick="nextWeek()">다음 주 ▶</button>
     </div>
-    <div class="table-wrap">
-      <table id="data-table">
-        <thead>
-          <tr>
-            <th>날짜</th><th>유형</th><th>조회수</th><th>팔로워 증가</th><th>좋아요</th><th>저장</th><th>공유</th><th>댓글</th><th>도달</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
+    <div class="week-tabs" id="week-tabs"></div>
+    <div class="week-summary" id="week-summary"></div>
+    <div class="week-compare-row">
+      <div class="chart-box">
+        <div class="chart-header"><span class="chart-title">이번 주 지표 추이</span></div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="weekTrendChart" role="img" aria-label="주간 지표 추이"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-header"><span class="chart-title">전주 대비 비교</span></div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="weekCompareChart" role="img" aria-label="전주 대비 비교 차트"></canvas>
+        </div>
+      </div>
     </div>
-    <div class="bottom-bar">
-      <button class="export-btn" onclick="exportCSV()">CSV 내보내기</button>
+    <div class="chart-box" style="margin-bottom:1rem;">
+      <div class="chart-header"><span class="chart-title">콘텐츠 유형별 조회수</span></div>
+      <div style="position:relative;width:100%;height:200px;">
+        <canvas id="weekTypeChart" role="img" aria-label="주간 콘텐츠 유형별 조회수"></canvas>
+      </div>
     </div>
   </div>
 
 </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const METRICS = [
-  { key:'views',     label:'총 조회수',    color:'#cc2366', fmt: v => v>=10000 ? Math.round(v/1000)+'K' : v.toLocaleString() },
-  { key:'followers', label:'팔로워 증가',  color:'#185FA5', fmt: v => '+'+v.toLocaleString() },
-  { key:'saves',     label:'저장',         color:'#1D9E75', fmt: v => v.toLocaleString() },
-  { key:'shares',    label:'공유',         color:'#BA7517', fmt: v => v.toLocaleString() },
-  { key:'likes',     label:'좋아요',       color:'#A32D2D', fmt: v => v.toLocaleString() },
-  { key:'comments',  label:'댓글',         color:'#534AB7', fmt: v => v.toLocaleString() },
+  { key:'views',     label:'총 조회수',   color:'#cc2366', fmt: v => v>=10000?Math.round(v/1000)+'K':v.toLocaleString() },
+  { key:'followers', label:'팔로워 증가', color:'#185FA5', fmt: v => '+'+v.toLocaleString() },
+  { key:'saves',     label:'저장',        color:'#1D9E75', fmt: v => v.toLocaleString() },
+  { key:'shares',    label:'공유',        color:'#BA7517', fmt: v => v.toLocaleString() },
+  { key:'likes',     label:'좋아요',      color:'#A32D2D', fmt: v => v.toLocaleString() },
+  { key:'comments',  label:'댓글',        color:'#534AB7', fmt: v => v.toLocaleString() },
 ];
+const TYPES = ['제품 큐레이션','프로모션','공간 및 라이프스타일'];
+const TYPE_COLORS = ['#cc2366','#185FA5','#BA7517'];
 
 let tableData = [
-  { date:'2025-04-29', type:'제품 큐레이션',       views:42800, followers:312, likes:1840, saves:620, shares:310, comments:88,  reach:38200 },
-  { date:'2025-04-30', type:'프로모션',             views:18500, followers:95,  likes:760,  saves:210, shares:88,  comments:34,  reach:15600 },
-  { date:'2025-05-01', type:'제품 큐레이션',       views:61200, followers:490, likes:2710, saves:940, shares:520, comments:142, reach:55800 },
-  { date:'2025-05-02', type:'공간 및 라이프스타일', views:9800,  followers:42,  likes:320,  saves:88,  shares:44,  comments:12,  reach:8900  },
-  { date:'2025-05-03', type:'프로모션',             views:22400, followers:118, likes:920,  saves:290, shares:130, comments:52,  reach:19200 },
+  { date:'2025-04-21', type:'제품 큐레이션',       views:38400, followers:260, likes:1620, saves:540, shares:280, comments:74,  reach:34100 },
+  { date:'2025-04-22', type:'프로모션',             views:15200, followers:78,  likes:630,  saves:180, shares:72,  comments:28,  reach:13400 },
+  { date:'2025-04-23', type:'공간 및 라이프스타일', views:22100, followers:104, likes:870,  saves:260, shares:112, comments:44,  reach:19800 },
+  { date:'2025-04-24', type:'제품 큐레이션',       views:51800, followers:420, likes:2340, saves:810, shares:460, comments:122, reach:47200 },
+  { date:'2025-04-25', type:'프로모션',             views:19600, followers:92,  likes:780,  saves:220, shares:96,  comments:38,  reach:17400 },
+  { date:'2025-04-28', type:'제품 큐레이션',       views:42800, followers:312, likes:1840, saves:620, shares:310, comments:88,  reach:38200 },
+  { date:'2025-04-29', type:'프로모션',             views:18500, followers:95,  likes:760,  saves:210, shares:88,  comments:34,  reach:15600 },
+  { date:'2025-04-30', type:'제품 큐레이션',       views:61200, followers:490, likes:2710, saves:940, shares:520, comments:142, reach:55800 },
+  { date:'2025-05-01', type:'공간 및 라이프스타일', views:9800,  followers:42,  likes:320,  saves:88,  shares:44,  comments:12,  reach:8900  },
+  { date:'2025-05-02', type:'프로모션',             views:22400, followers:118, likes:920,  saves:290, shares:130, comments:52,  reach:19200 },
   { date:'2025-05-04', type:'제품 큐레이션',       views:55600, followers:380, likes:2240, saves:810, shares:440, comments:118, reach:50100 },
 ];
 
 let selectedMetric = 'views';
-let trendChart, typeChart, engChart;
+let trendChart, typeChart, engChart, weekTrendChart, weekCompareChart, weekTypeChart;
+let currentWeekIdx = 0;
 
-function calcTotals() {
+function getWeekStart(dateStr) {
+  const d = new Date(dateStr);
+  const day = d.getDay();
+  const diff = day===0 ? -6 : 1-day;
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+
+function formatWeekLabel(ws) {
+  const s = new Date(ws), e = new Date(ws);
+  e.setDate(e.getDate()+6);
+  const f = d => `${d.getMonth()+1}/${d.getDate()}`;
+  return `${s.getFullYear()}년 ${f(s)} ~ ${f(e)}`;
+}
+
+function getWeeks() {
+  return [...new Set(tableData.map(r=>getWeekStart(r.date)))].sort();
+}
+
+function getWeekData(idx) {
+  const weeks = getWeeks();
+  if (!weeks[idx]) return [];
+  const ws = weeks[idx];
+  const we = new Date(ws); we.setDate(we.getDate()+6);
+  return tableData.filter(r => r.date>=ws && r.date<=we.toISOString().slice(0,10));
+}
+
+function calcTotals(data) {
   const t = {};
-  METRICS.forEach(m => t[m.key] = tableData.reduce((s,r) => s + (+r[m.key]||0), 0));
+  METRICS.forEach(m => t[m.key] = (data||tableData).reduce((s,r)=>s+(+r[m.key]||0),0));
   return t;
 }
 
-function calcDeltas() {
-  const half = Math.floor(tableData.length / 2);
-  const d = {};
+function calcDeltas(data) {
+  data = data||tableData;
+  const half = Math.floor(data.length/2), d = {};
   METRICS.forEach(m => {
-    const r = tableData.slice(half).reduce((s,row) => s+(+row[m.key]||0), 0);
-    const p = tableData.slice(0, half).reduce((s,row) => s+(+row[m.key]||0), 0);
-    d[m.key] = p === 0 ? 0 : Math.round((r - p) / p * 100);
+    const r = data.slice(half).reduce((s,row)=>s+(+row[m.key]||0),0);
+    const p = data.slice(0,half).reduce((s,row)=>s+(+row[m.key]||0),0);
+    d[m.key] = p===0?0:Math.round((r-p)/p*100);
   });
   return d;
 }
 
 function renderMetrics() {
-  const totals = calcTotals(), deltas = calcDeltas();
-  const grid = document.getElementById('metrics-grid');
-  grid.innerHTML = '';
+  const totals=calcTotals(), deltas=calcDeltas();
+  const grid=document.getElementById('metrics-grid'); grid.innerHTML='';
   METRICS.forEach(m => {
-    const delta = deltas[m.key];
-    const card = document.createElement('div');
-    card.className = 'metric-card' + (selectedMetric === m.key ? ' selected' : '');
-    card.innerHTML = `
-      <div class="metric-label">${m.label}</div>
-      <div class="metric-value">${m.fmt(totals[m.key])}</div>
-      <div class="metric-delta ${delta >= 0 ? 'delta-up' : 'delta-down'}">${delta >= 0 ? '▲' : '▼'} ${Math.abs(delta)}%</div>
-    `;
-    card.onclick = () => { selectedMetric = m.key; renderMetrics(); renderTrendChart(); };
+    const delta=deltas[m.key], card=document.createElement('div');
+    card.className='metric-card'+(selectedMetric===m.key?' selected':'');
+    card.innerHTML=`<div class="metric-label">${m.label}</div><div class="metric-value">${m.fmt(totals[m.key])}</div><div class="metric-delta ${delta>=0?'delta-up':'delta-down'}">${delta>=0?'▲':'▼'} ${Math.abs(delta)}%</div>`;
+    card.onclick=()=>{ selectedMetric=m.key; renderMetrics(); renderTrendChart(); };
     grid.appendChild(card);
   });
 }
 
 function renderTrendChart() {
-  const labels = tableData.map(r => r.date.slice(5));
-  const m = METRICS.find(x => x.key === selectedMetric);
-  const data = tableData.map(r => +r[selectedMetric] || 0);
-  document.getElementById('chart-legend').innerHTML =
-    `<span class="legend-item"><span class="legend-dot" style="background:${m.color}"></span>${m.label}</span>`;
-  if (trendChart) trendChart.destroy();
-  trendChart = new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: { labels, datasets: [{ label: m.label, data, borderColor: m.color, backgroundColor: m.color+'22', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: m.color }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-        y: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 }, callback: v => v >= 1000 ? Math.round(v/1000)+'K' : v } }
-      }
-    }
+  const m=METRICS.find(x=>x.key===selectedMetric);
+  document.getElementById('chart-legend').innerHTML=`<span class="legend-item"><span class="legend-dot" style="background:${m.color}"></span>${m.label}</span>`;
+  if(trendChart) trendChart.destroy();
+  trendChart=new Chart(document.getElementById('trendChart'),{
+    type:'line',
+    data:{labels:tableData.map(r=>r.date.slice(5)),datasets:[{label:m.label,data:tableData.map(r=>+r[m.key]||0),borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:m.color}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}
   });
 }
 
 function renderTypeChart() {
-  const counts = { '제품 큐레이션': 0, '프로모션': 0, '공간 및 라이프스타일': 0 };
-  tableData.forEach(r => { if (counts[r.type] !== undefined) counts[r.type]++; });
-  const colors = ['#cc2366','#185FA5','#BA7517'];
-  const labels = Object.keys(counts);
-  const values = Object.values(counts);
-  const total = values.reduce((a,b)=>a+b,0);
-  document.getElementById('type-legend').innerHTML = labels.map((l,i)=>
-    `<span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${l} ${total>0?Math.round(values[i]/total*100):0}%</span>`
-  ).join('');
-  if (typeChart) typeChart.destroy();
-  typeChart = new Chart(document.getElementById('typeChart'), {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: 'transparent' }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
-  });
+  const counts={}; TYPES.forEach(t=>counts[t]=0);
+  tableData.forEach(r=>{if(counts[r.type]!==undefined)counts[r.type]++;});
+  const values=Object.values(counts), total=values.reduce((a,b)=>a+b,0);
+  document.getElementById('type-legend').innerHTML=TYPES.map((l,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${TYPE_COLORS[i]}"></span>${l} ${total>0?Math.round(values[i]/total*100):0}%</span>`).join('');
+  if(typeChart) typeChart.destroy();
+  typeChart=new Chart(document.getElementById('typeChart'),{type:'doughnut',data:{labels:TYPES,datasets:[{data:values,backgroundColor:TYPE_COLORS,borderWidth:2,borderColor:'transparent'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}});
 }
 
 function renderEngageChart() {
-  const totals = calcTotals();
-  const labels = ['좋아요','저장','공유','댓글'];
-  const values = [totals.likes, totals.saves, totals.shares, totals.comments];
-  if (engChart) engChart.destroy();
-  engChart = new Chart(document.getElementById('engageChart'), {
-    type: 'bar',
-    data: { labels, datasets: [{ data: values, backgroundColor: ['#A32D2D','#1D9E75','#BA7517','#534AB7'], borderRadius: 6, borderSkipped: false }] },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 }, callback: v => v >= 1000 ? Math.round(v/1000)+'K' : v } },
-        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
-      }
-    }
-  });
+  const t=calcTotals();
+  if(engChart) engChart.destroy();
+  engChart=new Chart(document.getElementById('engageChart'),{type:'bar',data:{labels:['좋아요','저장','공유','댓글'],datasets:[{data:[t.likes,t.saves,t.shares,t.comments],backgroundColor:['#A32D2D','#1D9E75','#BA7517','#534AB7'],borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
 }
 
 function renderTable() {
-  const tbody = document.getElementById('table-body');
-  tbody.innerHTML = '';
-  tableData.forEach((row, i) => {
-    const typeClass = row.type==='제품 큐레이션' ? 'tag-product' : row.type==='프로모션' ? 'tag-promo' : 'tag-lifestyle';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input value="${row.date}" onchange="updateCell(${i},'date',this.value)" style="width:95px"></td>
-      <td>
-        <select onchange="updateCell(${i},'type',this.value)" style="background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit;outline:none;">
-          ${['제품 큐레이션','프로모션','공간 및 라이프스타일'].map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}
-        </select>
-      </td>
-      <td><input type="number" value="${row.views}"     onchange="updateCell(${i},'views',+this.value)"></td>
-      <td><input type="number" value="${row.followers}" onchange="updateCell(${i},'followers',+this.value)"></td>
-      <td><input type="number" value="${row.likes}"     onchange="updateCell(${i},'likes',+this.value)"></td>
-      <td><input type="number" value="${row.saves}"     onchange="updateCell(${i},'saves',+this.value)"></td>
-      <td><input type="number" value="${row.shares}"    onchange="updateCell(${i},'shares',+this.value)"></td>
-      <td><input type="number" value="${row.comments}"  onchange="updateCell(${i},'comments',+this.value)"></td>
-      <td><input type="number" value="${row.reach}"     onchange="updateCell(${i},'reach',+this.value)"></td>
-    `;
+  const tbody=document.getElementById('table-body'); tbody.innerHTML='';
+  tableData.forEach((row,i)=>{
+    const tc=row.type==='제품 큐레이션'?'tag-product':row.type==='프로모션'?'tag-promo':'tag-lifestyle';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input value="${row.date}" onchange="updateCell(${i},'date',this.value)" style="width:95px"></td><td><select onchange="updateCell(${i},'type',this.value)" style="background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit;outline:none;">${TYPES.map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}</select></td><td><input type="number" value="${row.views}" onchange="updateCell(${i},'views',+this.value)"></td><td><input type="number" value="${row.followers}" onchange="updateCell(${i},'followers',+this.value)"></td><td><input type="number" value="${row.likes}" onchange="updateCell(${i},'likes',+this.value)"></td><td><input type="number" value="${row.saves}" onchange="updateCell(${i},'saves',+this.value)"></td><td><input type="number" value="${row.shares}" onchange="updateCell(${i},'shares',+this.value)"></td><td><input type="number" value="${row.comments}" onchange="updateCell(${i},'comments',+this.value)"></td><td><input type="number" value="${row.reach}" onchange="updateCell(${i},'reach',+this.value)"></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function updateCell(i, key, val) {
-  tableData[i][key] = val;
-  renderMetrics(); renderTrendChart(); renderTypeChart(); renderEngageChart();
-  if (key === 'type') renderTable();
+function updateCell(i,key,val){ tableData[i][key]=val; renderAll(); if(key==='type'||key==='date') renderTable(); }
+function addRow(){ tableData.push({date:new Date().toISOString().slice(0,10),type:'제품 큐레이션',views:0,followers:0,likes:0,saves:0,shares:0,comments:0,reach:0}); renderTable(); renderAll(); }
+
+// 주단위 뷰
+function renderWeekTabs() {
+  const weeks=getWeeks(), container=document.getElementById('week-tabs'); container.innerHTML='';
+  weeks.forEach((w,i)=>{
+    const btn=document.createElement('button');
+    btn.className='week-tab'+(i===currentWeekIdx?' active':'');
+    btn.textContent=formatWeekLabel(w);
+    btn.onclick=()=>{ currentWeekIdx=i; renderWeekView(); };
+    container.appendChild(btn);
+  });
 }
 
-function addRow() {
-  tableData.push({ date: new Date().toISOString().slice(0,10), type:'제품 큐레이션', views:0, followers:0, likes:0, saves:0, shares:0, comments:0, reach:0 });
-  renderTable(); renderMetrics(); renderTypeChart(); renderEngageChart();
+function renderWeekSummary() {
+  const curr=getWeekData(currentWeekIdx), prev=getWeekData(currentWeekIdx-1);
+  const ct=calcTotals(curr), pt=calcTotals(prev);
+  const container=document.getElementById('week-summary');
+  if(!curr.length){container.innerHTML='<div class="no-data">이번 주 데이터가 없습니다.</div>';return;}
+  container.innerHTML=METRICS.map(m=>{
+    const delta=pt[m.key]>0?Math.round((ct[m.key]-pt[m.key])/pt[m.key]*100):null;
+    const dHtml=delta!==null?`<div class="week-stat-delta ${delta>=0?'delta-up':'delta-down'}">${delta>=0?'▲':'▼'} ${Math.abs(delta)}% 전주 대비</div>`:`<div class="week-stat-delta" style="color:#bbb">전주 데이터 없음</div>`;
+    return `<div><div class="week-stat-label">${m.label}</div><div class="week-stat-val">${m.fmt(ct[m.key])}</div>${dHtml}</div>`;
+  }).join('');
 }
 
-function setRange(btn, label) {
-  document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('active'));
+function renderWeekTrendChart() {
+  const curr=getWeekData(currentWeekIdx);
+  if(weekTrendChart) weekTrendChart.destroy();
+  if(!curr.length) return;
+  const m=METRICS.find(x=>x.key===selectedMetric);
+  weekTrendChart=new Chart(document.getElementById('weekTrendChart'),{type:'line',data:{labels:curr.map(r=>r.date.slice(5)),datasets:[{label:m.label,data:curr.map(r=>+r[m.key]||0),borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:m.color}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}});
+}
+
+function renderWeekCompareChart() {
+  const curr=getWeekData(currentWeekIdx), prev=getWeekData(currentWeekIdx-1);
+  if(weekCompareChart) weekCompareChart.destroy();
+  const keys=['views','likes','saves','shares'], keyLabels=['조회수','좋아요','저장','공유'];
+  const ct=calcTotals(curr), pt=calcTotals(prev);
+  const datasets=[{label:'이번 주',data:keys.map(k=>ct[k]||0),backgroundColor:'#cc2366',borderRadius:4,borderSkipped:false}];
+  if(prev.length) datasets.push({label:'전주',data:keys.map(k=>pt[k]||0),backgroundColor:'#cccccc',borderRadius:4,borderSkipped:false});
+  weekCompareChart=new Chart(document.getElementById('weekCompareChart'),{type:'bar',data:{labels:keyLabels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}});
+}
+
+function renderWeekTypeChart() {
+  const curr=getWeekData(currentWeekIdx);
+  if(weekTypeChart) weekTypeChart.destroy();
+  if(!curr.length) return;
+  const tv={}; TYPES.forEach(t=>tv[t]=0);
+  curr.forEach(r=>{if(tv[r.type]!==undefined)tv[r.type]+=(+r.views||0);});
+  weekTypeChart=new Chart(document.getElementById('weekTypeChart'),{type:'bar',data:{labels:TYPES,datasets:[{label:'조회수',data:TYPES.map(t=>tv[t]),backgroundColor:TYPE_COLORS,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}});
+}
+
+function renderWeekView() {
+  const weeks=getWeeks();
+  if(!weeks.length) return;
+  currentWeekIdx=Math.max(0,Math.min(currentWeekIdx,weeks.length-1));
+  document.getElementById('week-label').textContent=formatWeekLabel(weeks[currentWeekIdx]);
+  renderWeekTabs(); renderWeekSummary(); renderWeekTrendChart(); renderWeekCompareChart(); renderWeekTypeChart();
+}
+
+function prevWeek(){ if(currentWeekIdx>0){currentWeekIdx--;renderWeekView();} }
+function nextWeek(){ const w=getWeeks(); if(currentWeekIdx<w.length-1){currentWeekIdx++;renderWeekView();} }
+
+function switchView(view, btn) {
+  document.querySelectorAll('.date-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('date-label').textContent = '최근 ' + label;
+  document.getElementById('panel-overall').classList.toggle('active',view==='overall');
+  document.getElementById('panel-weekly').classList.toggle('active',view==='weekly');
+  document.getElementById('date-label').textContent=view==='overall'?'전체 데이터':'주단위 분석';
+  if(view==='weekly'){ currentWeekIdx=getWeeks().length-1; renderWeekView(); }
 }
+
+function renderAll(){ renderMetrics(); renderTrendChart(); renderTypeChart(); renderEngageChart(); }
 
 function exportCSV() {
-  const headers = ['날짜','유형','조회수','팔로워증가','좋아요','저장','공유','댓글','도달'];
-  const rows = tableData.map(r => [r.date, r.type, r.views, r.followers, r.likes, r.saves, r.shares, r.comments, r.reach].join(','));
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'instagram_dashboard.csv';
-  a.click();
+  const headers=['날짜','유형','조회수','팔로워증가','좋아요','저장','공유','댓글','도달'];
+  const rows=tableData.map(r=>[r.date,r.type,r.views,r.followers,r.likes,r.saves,r.shares,r.comments,r.reach].join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='instagram_dashboard.csv'; a.click();
 }
 
-renderMetrics();
-renderTrendChart();
-renderTypeChart();
-renderEngageChart();
+renderAll();
 renderTable();
 </script>
 </body>
