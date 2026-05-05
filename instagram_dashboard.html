@@ -55,9 +55,9 @@
     td input { background: transparent; border: none; font-size: 13px; width: 80px; font-family: inherit; outline: none; }
     td input:focus { border-bottom: 1.5px solid #cc2366; }
     .tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
-    .tag-reel  { background: #EEEDFE; color: #3C3489; }
-    .tag-post  { background: #E1F5EE; color: #085041; }
-    .tag-story { background: #FAECE7; color: #712B13; }
+    .tag-product  { background: #EEEDFE; color: #3C3489; }
+    .tag-promo    { background: #E1F5EE; color: #085041; }
+    .tag-lifestyle { background: #FAECE7; color: #712B13; }
     .save-btn { font-size: 12px; padding: 6px 16px; border-radius: 8px; border: 1px solid #ccc; background: transparent; cursor: pointer; }
     .save-btn:hover { background: #f0f0f0; }
     .bottom-bar { display: flex; justify-content: flex-end; margin-top: 12px; gap: 8px; }
@@ -153,12 +153,12 @@ const METRICS = [
 ];
 
 let tableData = [
-  { date:'2025-04-29', type:'릴스',   views:42800, followers:312, likes:1840, saves:620, shares:310, comments:88,  reach:38200 },
-  { date:'2025-04-30', type:'게시물', views:18500, followers:95,  likes:760,  saves:210, shares:88,  comments:34,  reach:15600 },
-  { date:'2025-05-01', type:'릴스',   views:61200, followers:490, likes:2710, saves:940, shares:520, comments:142, reach:55800 },
-  { date:'2025-05-02', type:'스토리', views:9800,  followers:42,  likes:320,  saves:88,  shares:44,  comments:12,  reach:8900  },
-  { date:'2025-05-03', type:'게시물', views:22400, followers:118, likes:920,  saves:290, shares:130, comments:52,  reach:19200 },
-  { date:'2025-05-04', type:'릴스',   views:55600, followers:380, likes:2240, saves:810, shares:440, comments:118, reach:50100 },
+  { date:'2025-04-29', type:'제품 큐레이션',       views:42800, followers:312, likes:1840, saves:620, shares:310, comments:88,  reach:38200 },
+  { date:'2025-04-30', type:'프로모션',             views:18500, followers:95,  likes:760,  saves:210, shares:88,  comments:34,  reach:15600 },
+  { date:'2025-05-01', type:'제품 큐레이션',       views:61200, followers:490, likes:2710, saves:940, shares:520, comments:142, reach:55800 },
+  { date:'2025-05-02', type:'공간 및 라이프스타일', views:9800,  followers:42,  likes:320,  saves:88,  shares:44,  comments:12,  reach:8900  },
+  { date:'2025-05-03', type:'프로모션',             views:22400, followers:118, likes:920,  saves:290, shares:130, comments:52,  reach:19200 },
+  { date:'2025-05-04', type:'제품 큐레이션',       views:55600, followers:380, likes:2240, saves:810, shares:440, comments:118, reach:50100 },
 ];
 
 let selectedMetric = 'views';
@@ -221,7 +221,7 @@ function renderTrendChart() {
 }
 
 function renderTypeChart() {
-  const counts = { '릴스': 0, '게시물': 0, '스토리': 0 };
+  const counts = { '제품 큐레이션': 0, '프로모션': 0, '공간 및 라이프스타일': 0 };
   tableData.forEach(r => { if (counts[r.type] !== undefined) counts[r.type]++; });
   const colors = ['#cc2366','#185FA5','#BA7517'];
   const labels = Object.keys(counts);
@@ -261,13 +261,13 @@ function renderTable() {
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = '';
   tableData.forEach((row, i) => {
-    const typeClass = row.type==='릴스' ? 'tag-reel' : row.type==='게시물' ? 'tag-post' : 'tag-story';
+    const typeClass = row.type==='제품 큐레이션' ? 'tag-product' : row.type==='프로모션' ? 'tag-promo' : 'tag-lifestyle';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><input value="${row.date}" onchange="updateCell(${i},'date',this.value)" style="width:95px"></td>
       <td>
         <select onchange="updateCell(${i},'type',this.value)" style="background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit;outline:none;">
-          ${['릴스','게시물','스토리'].map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}
+          ${['제품 큐레이션','프로모션','공간 및 라이프스타일'].map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}
         </select>
       </td>
       <td><input type="number" value="${row.views}"     onchange="updateCell(${i},'views',+this.value)"></td>
@@ -289,7 +289,7 @@ function updateCell(i, key, val) {
 }
 
 function addRow() {
-  tableData.push({ date: new Date().toISOString().slice(0,10), type:'게시물', views:0, followers:0, likes:0, saves:0, shares:0, comments:0, reach:0 });
+  tableData.push({ date: new Date().toISOString().slice(0,10), type:'제품 큐레이션', views:0, followers:0, likes:0, saves:0, shares:0, comments:0, reach:0 });
   renderTable(); renderMetrics(); renderTypeChart(); renderEngageChart();
 }
 
