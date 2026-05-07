@@ -49,9 +49,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD G
 .table-wrap { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th { font-size: 11px; font-weight: 500; color: var(--text2); padding: 10px 12px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; background: var(--bg3); }
-tbody td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+tbody td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; white-space: nowrap; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: var(--bg); }
+.td-truncate { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Brand badge */
 .brand-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
@@ -343,9 +344,9 @@ function renderTable() {
       <td>${r.acct||'-'}</td>
       <td>${r.name||'-'}</td>
       <td>${r.contact||'-'}</td>
-      <td>${r.address||'-'}</td>
-      <td>${r.product||'-'}</td>
-      <td>${r.option||'-'}</td>
+      <td class="td-truncate" title="${r.address||''}">${r.address||'-'}</td>
+      <td class="td-truncate" title="${r.product||''}">${r.product||'-'}</td>
+      <td class="td-truncate" title="${r.option||''}">${r.option||'-'}</td>
       <td>${fmtDate(r.contract)}</td>
       <td>${fmtDate(r.end)}</td>
       <td>${fmtDate(r.expose)}</td>
