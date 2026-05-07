@@ -74,9 +74,11 @@ tbody tr:hover { background: var(--bg); }
 .s-plan   { background: #e3f2fd; color: #1565c0; }
 .s-done   { background: #f5f5f5; color: #616161; }
 
-/* Delete btn */
+/* Action btns */
 .btn-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; }
 .btn-del:hover { color: #c0392b; background: #fdecea; }
+.btn-edit { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; margin-right: 2px; }
+.btn-edit:hover { color: #1a6ea8; background: #e6f5ff; }
 
 /* Pagination */
 .pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; font-size: 12px; color: var(--text2); }
@@ -196,7 +198,7 @@ tbody tr:hover { background: var(--bg); }
 <!-- Modal -->
 <div class="modal" id="modal">
   <div class="modal-box">
-    <h2>새 협찬 추가</h2>
+    <h2 id="modal-title">새 협찬 추가</h2>
     <div class="form-row">
       <div class="form-group"><label>브랜드</label>
         <select id="m-brand">
@@ -304,7 +306,10 @@ function renderTable() {
       <td>${fmtDate(r.expose)}</td>
       <td style="font-weight:600">${fmt(r.price)}</td>
       <td>${statusBadge(r.status)}</td>
-      <td><button class="btn-del" onclick="delRow(${r.no})"><i class="ti ti-trash"></i></button></td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit" onclick="editRow(${r.no})" title="수정"><i class="ti ti-pencil"></i></button>
+        <button class="btn-del" onclick="delRow(${r.no})" title="삭제"><i class="ti ti-trash"></i></button>
+      </td>
     </tr>`).join('');
   }
   // Pagination
@@ -320,9 +325,38 @@ function delRow(no) {
   data = data.filter(r=>r.no!==no); save(); page=1; renderTable();
 }
 
+function editRow(no) {
+  const r = data.find(d=>d.no===no);
+  if(!r) return;
+  document.getElementById('m-brand').value = r.brand;
+  document.getElementById('m-channel').value = r.channel;
+  document.getElementById('m-acct').value = r.acct||'';
+  document.getElementById('m-product').value = r.product||'';
+  document.getElementById('m-option').value = r.option||'';
+  document.getElementById('m-contract').value = r.contract||'';
+  document.getElementById('m-end').value = r.end||'';
+  document.getElementById('m-expose').value = r.expose||'';
+  document.getElementById('m-price').value = r.price||'';
+  document.getElementById('m-status').value = r.status;
+  document.getElementById('m-note').value = r.note||'';
+  document.getElementById('modal-title').textContent = '협찬 수정';
+  document.getElementById('saveBtn').textContent = '저장';
+  document.getElementById('modal').dataset.editNo = no;
+  document.getElementById('modal').classList.add('open');
+}
+
 ['f-brand','f-channel','f-status'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{page=1;renderTable();}));
 
-document.getElementById('openModal').addEventListener('click',()=>document.getElementById('modal').classList.add('open'));
+document.getElementById('openModal').addEventListener('click',()=>{
+  document.getElementById('modal-title').textContent = '새 협찬 추가';
+  document.getElementById('saveBtn').textContent = '추가';
+  delete document.getElementById('modal').dataset.editNo;
+  ['m-acct','m-product','m-option','m-contract','m-end','m-expose','m-price','m-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-brand').value='잭슨카멜레온';
+  document.getElementById('m-channel').value='인스타';
+  document.getElementById('m-status').value='진행중';
+  document.getElementById('modal').classList.add('open');
+});
 document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');});
 
@@ -338,11 +372,17 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   const price=parseInt(document.getElementById('m-price').value)||0;
   const status=document.getElementById('m-status').value;
   const note=document.getElementById('m-note').value.trim();
-  data.push({no:nextNo++,brand,channel,acct,product,option,contract,end,expose,price,status,note});
+  const editNo = document.getElementById('modal').dataset.editNo;
+  if(editNo) {
+    const idx = data.findIndex(r=>r.no===+editNo);
+    if(idx>-1) data[idx] = {...data[idx], brand,channel,acct,product,option,contract,end,expose,price,status,note};
+  } else {
+    data.push({no:nextNo++,brand,channel,acct,product,option,contract,end,expose,price,status,note});
+  }
   save();
   document.getElementById('modal').classList.remove('open');
-  ['m-acct','m-product','m-option','m-contract','m-end','m-expose','m-price','m-note'].forEach(id=>document.getElementById(id).value='');
-  page=1; renderTable();
+  delete document.getElementById('modal').dataset.editNo;
+  renderTable();
 });
 
 // Monthly
