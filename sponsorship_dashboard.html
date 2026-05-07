@@ -185,7 +185,7 @@ tbody tr:hover { background: var(--bg); }
       <table>
         <thead>
           <tr>
-            <th>No.</th><th>브랜드</th><th>채널</th><th>계정명</th><th>이름</th><th>연락처</th><th>제품 컬렉션</th><th>옵션</th>
+            <th>No.</th><th>브랜드</th><th>채널</th><th>계정명</th><th>이름</th><th>연락처</th><th>주소</th><th>제품 컬렉션</th><th>옵션</th>
             <th>계약일</th><th>종료일</th><th>노출일</th><th>협찬 비용</th><th>상태</th><th></th>
           </tr>
         </thead>
@@ -254,6 +254,9 @@ tbody tr:hover { background: var(--bg); }
     <div class="form-row">
       <div class="form-group"><label>이름</label><input id="m-name" placeholder="담당자 이름"></div>
       <div class="form-group"><label>연락처</label><input id="m-contact" placeholder="010-0000-0000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full"><label>주소</label><input id="m-address" placeholder="배송 주소"></div>
     </div>
     <div class="form-row">
       <div class="form-group full"><label>제품 컬렉션</label><input id="m-product" placeholder="제품명/컬렉션"></div>
@@ -331,7 +334,7 @@ function renderTable() {
   const start = (page-1)*PAGE_SIZE;
   const slice = rows.slice(start, start+PAGE_SIZE);
   const tbody = document.getElementById('tbody');
-  if(!slice.length) { tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text3)">데이터가 없습니다</td></tr>`; }
+  if(!slice.length) { tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:2rem;color:var(--text3)">데이터가 없습니다</td></tr>`; }
   else {
     tbody.innerHTML = slice.map(r=>`<tr>
       <td style="color:var(--text3)">${r.no}</td>
@@ -340,6 +343,7 @@ function renderTable() {
       <td>${r.acct||'-'}</td>
       <td>${r.name||'-'}</td>
       <td>${r.contact||'-'}</td>
+      <td>${r.address||'-'}</td>
       <td>${r.product||'-'}</td>
       <td>${r.option||'-'}</td>
       <td>${fmtDate(r.contract)}</td>
@@ -374,6 +378,7 @@ function editRow(no) {
   document.getElementById('m-acct').value = r.acct||'';
   document.getElementById('m-name').value = r.name||'';
   document.getElementById('m-contact').value = r.contact||'';
+  document.getElementById('m-address').value = r.address||'';
   document.getElementById('m-product').value = r.product||'';
   document.getElementById('m-option').value = r.option||'';
   document.getElementById('m-contract').value = r.contract||'';
@@ -394,7 +399,7 @@ document.getElementById('openModal').addEventListener('click',()=>{
   document.getElementById('modal-title').textContent = '새 협찬 추가';
   document.getElementById('saveBtn').textContent = '추가';
   delete document.getElementById('modal').dataset.editNo;
-  ['m-acct','m-name','m-contact','m-product','m-option','m-contract','m-end','m-expose','m-price','m-note'].forEach(id=>document.getElementById(id).value='');
+  ['m-acct','m-name','m-contact','m-address','m-product','m-option','m-contract','m-end','m-expose','m-price','m-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-brand').value='잭슨카멜레온';
   document.getElementById('m-channel').value='인스타';
   document.getElementById('m-status').value='진행중';
@@ -409,6 +414,7 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   const acct=document.getElementById('m-acct').value.trim();
   const name=document.getElementById('m-name').value.trim();
   const contact=document.getElementById('m-contact').value.trim();
+  const address=document.getElementById('m-address').value.trim();
   const product=document.getElementById('m-product').value.trim();
   const option=document.getElementById('m-option').value.trim();
   const contract=document.getElementById('m-contract').value;
@@ -420,9 +426,9 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   const editNo = document.getElementById('modal').dataset.editNo;
   if(editNo) {
     const idx = data.findIndex(r=>r.no===+editNo);
-    if(idx>-1) data[idx] = {...data[idx], brand,channel,acct,name,contact,product,option,contract,end,expose,price,status,note};
+    if(idx>-1) data[idx] = {...data[idx], brand,channel,acct,name,contact,address,product,option,contract,end,expose,price,status,note};
   } else {
-    data.push({no:nextNo++,brand,channel,acct,name,contact,product,option,contract,end,expose,price,status,note});
+    data.push({no:nextNo++,brand,channel,acct,name,contact,address,product,option,contract,end,expose,price,status,note});
   }
   save();
   document.getElementById('modal').classList.remove('open');
