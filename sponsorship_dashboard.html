@@ -117,6 +117,36 @@ tbody tr:hover { background: var(--bg); }
 .item-card .item-price { font-weight: 600; color: var(--text); }
 .empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); }
 
+/* Brand cost breakdown */
+.brand-cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.brand-cost-card {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r);
+  padding: .75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.brand-cost-card .brand-cost-left { display: flex; align-items: center; gap: 8px; }
+.brand-cost-card .brand-cost-count { font-size: 11px; color: var(--text3); }
+.brand-cost-card .brand-cost-amount { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.brand-cost-card .brand-cost-bar-wrap {
+  width: 100%;
+  height: 3px;
+  background: var(--bg3);
+  border-radius: 99px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.brand-cost-card .brand-cost-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+.brand-cost-card-inner { flex: 1; min-width: 0; }
+
 /* Chart view */
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
 .chart-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
@@ -173,6 +203,11 @@ tbody tr:hover { background: var(--bg); }
       <button onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
     </div>
     <div class="metrics-row3" id="month-metrics"></div>
+
+    <!-- 브랜드별 협찬 비용 (신규) -->
+    <div class="section-title">브랜드별 협찬 비용</div>
+    <div class="brand-cost-grid" id="brand-cost-grid"></div>
+
     <div class="section-title">이번 달 계약</div>
     <div class="item-list" id="list-contract"></div>
     <div class="section-title">이번 달 노출</div>
@@ -246,8 +281,8 @@ const BRAND_CLS = { '잭슨카멜레온':'b-jackson','무니토':'b-munito','바
 const BRAND_COLORS = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308','#ef4444','#06b6d4'];
 const PAGE_SIZE = 10;
 
-let data = [];
-let nextNo = 1;
+let data = [{"no":1,"brand":"TXTR","channel":"유튜브","acct":"_sihosiho","product":"로에 램프, X 모듈","option":"블랙 / X5, 가우디 52","contract":"2026-04-21","end":"2026-04-21","expose":"","price":1800000,"status":"진행중","note":""},{"no":2,"brand":"매직볼트","channel":"인스타","acct":"hyunz00","product":"클립테이블, 페그 체어","option":"블랙 2100 / 블랙 2개","contract":"2026-04-21","end":"2026-10-21","expose":"","price":2544000,"status":"진행중","note":"APR 에이전시"},{"no":3,"brand":"TXTR","channel":"인스타","acct":"color","product":"facade shelf","option":"이지터치 블랙, 1500, 4단","contract":"2026-04-30","end":"2026-10-30","expose":"","price":1850000,"status":"진행중","note":"APR 에이전시"},{"no":4,"brand":"매직볼트","channel":"유튜브","acct":"aneunhyeon__","product":"플랭크 테이블, 페그체어, 스쿨체어, 스팟체어","option":"플랭크 1500, 페그 - 블랙, 오크, 스쿨 -블랙, 스팟-오크","contract":"2026-04-30","end":"2026-10-30","expose":"","price":2227000,"status":"진행중","note":"APR 에이전시"},{"no":5,"brand":"MBIS","channel":"인스타","acct":"reum_pu","product":"마르셋 - 감보사","option":"M, 오팔 & 오렌지","contract":"2026-05-07","end":"2026-10-07","expose":"","price":920000,"status":"진행중","note":"APR 에이전시"},{"no":6,"brand":"바이헤이데이","channel":"인스타","acct":"_doit","product":"필로티 소파 테이블","option":"라이트","contract":"2026-04-07","end":"2026-10-07","expose":"","price":1100000,"status":"진행중","note":"자체 진행"},{"no":7,"brand":"무니토","channel":"유튜브","acct":"xodambi","product":"블랭크 데이베드","option":"레더 / Austen Ocher","contract":"2026-03-01","end":"2026-08-01","expose":"","price":3740000,"status":"진행중","note":"자체 진행"},{"no":8,"brand":"TXTR","channel":"유튜브","acct":"xodambi","product":"SDC 01","option":"camel / stainless","contract":"2026-03-01","end":"2026-08-01","expose":"","price":490000,"status":"진행중","note":"연예인 손담비 자체 진행"},{"no":9,"brand":"TXTR","channel":"인스타","acct":"@dahyunjae","product":"로에램프","option":"블랙","contract":"2026-04-30","end":"2026-10-30","expose":"","price":650000,"status":"진행중","note":"자체 진행"},{"no":10,"brand":"TXTR","channel":"유튜브","acct":"heeheedaek","product":"CH8 / ROHE LAMP","option":"beech / black","contract":"2026-04-30","end":"2026-10-30","expose":"2026-05-01","price":1430000,"status":"진행중","note":"자체 진행 \n1. 브랜디드 유튜브 영상(1편)- 완료 \n2. 룸투어 영상(1편) \n3. 집꾸미기 영상(조명 체어"}];
+let nextNo = 11;
 let page = 1;
 let curMonth = new Date();
 curMonth.setDate(1);
@@ -387,6 +422,45 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
 
 // Monthly
 function changeMonth(dir) { curMonth.setMonth(curMonth.getMonth()+dir); renderMonthly(); }
+
+function renderBrandCostGrid(contracts) {
+  const grid = document.getElementById('brand-cost-grid');
+
+  // 브랜드별 비용 집계
+  const brandTotals = BRANDS.map((b, bi) => {
+    const rows = contracts.filter(r => r.brand === b);
+    const total = rows.reduce((a, r) => a + Number(r.price || 0), 0);
+    return { brand: b, total, count: rows.length, color: BRAND_COLORS[bi] };
+  }).filter(b => b.total > 0 || b.count > 0);
+
+  if (!brandTotals.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">이달 브랜드 협찬 데이터가 없습니다</div>';
+    return;
+  }
+
+  const maxTotal = Math.max(...brandTotals.map(b => b.total), 1);
+
+  // 비용 높은 순으로 정렬
+  brandTotals.sort((a, b) => b.total - a.total);
+
+  grid.innerHTML = brandTotals.map(b => `
+    <div class="brand-cost-card">
+      <div class="brand-cost-card-inner">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px">
+          <div class="brand-cost-left">
+            ${brandBadge(b.brand)}
+            <span class="brand-cost-count">${b.count}건</span>
+          </div>
+          <span class="brand-cost-amount">${b.total > 0 ? b.total.toLocaleString('ko-KR') + '원' : '-'}</span>
+        </div>
+        <div class="brand-cost-bar-wrap">
+          <div class="brand-cost-bar" style="width:${b.total > 0 ? Math.round(b.total / maxTotal * 100) : 0}%;background:${b.color}88"></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderMonthly() {
   const y=curMonth.getFullYear(), m=curMonth.getMonth();
   document.getElementById('month-label').textContent = `${y}년 ${m+1}월`;
@@ -399,6 +473,10 @@ function renderMonthly() {
     {lbl:'노출 건수', val:exposes.length+'건'},
     {lbl:'이달 협찬 비용', val:totalCost.toLocaleString('ko-KR')+'원'},
   ].map(m=>`<div class="metric-card"><div class="lbl">${m.lbl}</div><div class="val">${m.val}</div></div>`).join('');
+
+  // 브랜드별 협찬 비용 렌더링 (신규)
+  renderBrandCostGrid(contracts);
+
   const renderList = (items, containerId) => {
     const el = document.getElementById(containerId);
     if(!items.length) { el.innerHTML='<div class="empty">이달 데이터가 없습니다</div>'; return; }
