@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>협찬 관리 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f4f0;
+  --bg2: #ffffff;
+  --bg3: #f0ede8;
+  --text: #1a1a18;
+  --text2: #72716b;
+  --text3: #a09e98;
+  --border: rgba(0,0,0,0.11);
+  --r: 8px;
+  --r2: 12px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+.app { max-width: 1120px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* Header */
+.app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.app-header h1 { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+/* Tabs */
+.page-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+.page-tab { font-size: 13px; padding: 9px 18px; border: none; background: none; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: color .15s; }
+.page-tab.active { color: var(--text); border-bottom-color: var(--text); }
+.page-tab:hover { color: var(--text); }
+
+/* Metrics */
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.metric-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); padding: 1rem 1.125rem; }
+.metric-card .lbl { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.metric-card .val { font-size: 22px; font-weight: 600; }
+.metric-card .sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+.filters select { font-size: 13px; padding: 5px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); height: 32px; cursor: pointer; }
+.btn-add { margin-left: auto; font-size: 13px; padding: 5px 14px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; height: 32px; display: flex; align-items: center; gap: 5px; }
+.btn-add:hover { opacity: .85; }
+
+/* Table */
+.table-wrap { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { font-size: 11px; font-weight: 500; color: var(--text2); padding: 10px 12px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; background: var(--bg3); }
+tbody td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--bg); }
+
+/* Brand badge */
+.brand-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+.b-jackson { background: #fff0e6; color: #c05a00; }
+.b-munito  { background: #e8f0ff; color: #2547a8; }
+.b-byheyday { background: #eafaf1; color: #1a7a41; }
+.b-oblique { background: #f5e6ff; color: #7a22a8; }
+.b-txtr    { background: #fff8e6; color: #a87e00; }
+.b-magic   { background: #ffe6e6; color: #a82222; }
+.b-mbis    { background: #e6f5ff; color: #1a6ea8; }
+
+/* Channel badge */
+.ch-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
+.ch-insta  { background: #fce4ec; color: #c2185b; }
+.ch-youtube { background: #ffebee; color: #c62828; }
+
+/* Status badge */
+.status-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.s-active { background: #e8f5e9; color: #2e7d32; }
+.s-plan   { background: #e3f2fd; color: #1565c0; }
+.s-done   { background: #f5f5f5; color: #616161; }
+
+/* Delete btn */
+.btn-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; }
+.btn-del:hover { color: #c0392b; background: #fdecea; }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; font-size: 12px; color: var(--text2); }
+.page-btns { display: flex; gap: 3px; }
+.page-btn { font-size: 12px; padding: 4px 9px; border: 0.5px solid var(--border); border-radius: 5px; background: var(--bg2); color: var(--text2); cursor: pointer; }
+.page-btn.active { background: var(--bg); color: var(--text); font-weight: 500; }
+.page-btn:hover { background: var(--bg); }
+
+/* Modal */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; align-items: center; justify-content: center; }
+.modal.open { display: flex; }
+.modal-box { background: var(--bg2); border-radius: var(--r2); padding: 1.5rem; width: 480px; max-width: 95vw; box-shadow: 0 8px 40px rgba(0,0,0,.15); }
+.modal-box h2 { font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1/-1; }
+.form-group label { font-size: 11px; color: var(--text2); }
+.form-group input, .form-group select, .form-group textarea { font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); width: 100%; }
+.form-group textarea { resize: vertical; min-height: 60px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+.btn-cancel { font-size: 13px; padding: 7px 16px; border: 0.5px solid var(--border); border-radius: var(--r); background: none; color: var(--text); cursor: pointer; }
+.btn-save { font-size: 13px; padding: 7px 16px; border: none; border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; }
+.btn-cancel:hover { background: var(--bg); }
+.btn-save:hover { opacity: .85; }
+
+/* Monthly view */
+.month-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+.month-nav button { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); width: 32px; height: 32px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.month-nav button:hover { background: var(--bg); }
+.month-label { font-size: 16px; font-weight: 600; }
+.metrics-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 1.25rem 0 .75rem; }
+.item-list { display: flex; flex-direction: column; gap: 8px; }
+.item-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); padding: .75rem 1rem; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.item-card .item-left { display: flex; align-items: center; gap: 10px; }
+.item-card .item-price { font-weight: 600; color: var(--text); }
+.empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); }
+
+/* Chart view */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+.chart-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
+.chart-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: var(--text2); }
+.chart-card canvas { max-height: 220px; }
+.year-select-wrap { margin-bottom: 1.25rem; }
+.year-select-wrap select { font-size: 13px; padding: 5px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); height: 32px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="app-header">
+    <h1><i class="ti ti-package" style="font-size:18px"></i> 협찬 관리 대시보드</h1>
+  </div>
+
+  <div class="page-tabs">
+    <button class="page-tab active" onclick="showPage('list')">전체 목록</button>
+    <button class="page-tab" onclick="showPage('monthly')">월별 현황</button>
+    <button class="page-tab" onclick="showPage('chart')">연간 차트</button>
+  </div>
+
+  <!-- LIST -->
+  <div id="page-list">
+    <div class="metrics" id="metrics"></div>
+    <div class="filters">
+      <select id="f-brand">
+        <option value="">전체 브랜드</option>
+        <option>잭슨카멜레온</option><option>무니토</option><option>바이헤이데이</option>
+        <option>오블리크테이블</option><option>TXTR</option><option>매직볼트</option><option>MBIS</option>
+      </select>
+      <select id="f-channel"><option value="">전체 채널</option><option>인스타</option><option>유튜브</option></select>
+      <select id="f-status"><option value="">전체 상태</option><option>진행중</option><option>예정</option><option>완료</option></select>
+      <button class="btn-add" id="openModal"><i class="ti ti-plus"></i> 새 협찬 추가</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th><th>브랜드</th><th>채널</th><th>계정명</th><th>제품 컬렉션</th><th>옵션</th>
+            <th>계약일</th><th>종료일</th><th>노출일</th><th>협찬 비용</th><th>상태</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- MONTHLY -->
+  <div id="page-monthly" style="display:none">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+      <span class="month-label" id="month-label"></span>
+      <button onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="metrics-row3" id="month-metrics"></div>
+    <div class="section-title">이번 달 계약</div>
+    <div class="item-list" id="list-contract"></div>
+    <div class="section-title">이번 달 노출</div>
+    <div class="item-list" id="list-expose"></div>
+  </div>
+
+  <!-- CHART -->
+  <div id="page-chart" style="display:none">
+    <div class="year-select-wrap">
+      <select id="year-select"></select>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>월별 협찬 비용 (브랜드별)</h3><canvas id="chart-monthly-cost"></canvas></div>
+      <div class="chart-card"><h3>월별 계약 건수</h3><canvas id="chart-monthly-count"></canvas></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>브랜드별 총 협찬 비용</h3><canvas id="chart-brand-cost"></canvas></div>
+      <div class="chart-card"><h3>채널별 비중</h3><canvas id="chart-channel"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h2>새 협찬 추가</h2>
+    <div class="form-row">
+      <div class="form-group"><label>브랜드</label>
+        <select id="m-brand">
+          <option>잭슨카멜레온</option><option>무니토</option><option>바이헤이데이</option>
+          <option>오블리크테이블</option><option>TXTR</option><option>매직볼트</option><option>MBIS</option>
+        </select>
+      </div>
+      <div class="form-group"><label>채널</label>
+        <select id="m-channel"><option>인스타</option><option>유튜브</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>계정명</label><input id="m-acct" placeholder="@계정명"></div>
+      <div class="form-group"><label>상태</label>
+        <select id="m-status"><option>진행중</option><option>예정</option><option>완료</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full"><label>제품 컬렉션</label><input id="m-product" placeholder="제품명/컬렉션"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full"><label>옵션</label><input id="m-option" placeholder="색상, 사이즈 등"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>계약일</label><input id="m-contract" type="date"></div>
+      <div class="form-group"><label>종료일</label><input id="m-end" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>노출일</label><input id="m-expose" type="date"></div>
+      <div class="form-group"><label>협찬 비용 (원)</label><input id="m-price" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full"><label>메모</label><textarea id="m-note" placeholder="비고 사항"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="closeModal">취소</button>
+      <button class="btn-save" id="saveBtn">추가</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BRANDS = ['잭슨카멜레온','무니토','바이헤이데이','오블리크테이블','TXTR','매직볼트','MBIS'];
+const BRAND_CLS = { '잭슨카멜레온':'b-jackson','무니토':'b-munito','바이헤이데이':'b-byheyday','오블리크테이블':'b-oblique','TXTR':'b-txtr','매직볼트':'b-magic','MBIS':'b-mbis' };
+const BRAND_COLORS = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308','#ef4444','#06b6d4'];
+const PAGE_SIZE = 10;
+
+let data = [];
+let nextNo = 1;
+let page = 1;
+let curMonth = new Date();
+curMonth.setDate(1);
+let charts = {};
+
+// LocalStorage
+function save() { try { localStorage.setItem('spons_data', JSON.stringify(data)); localStorage.setItem('spons_no', nextNo); } catch(e){} }
+function load() { try { const d = localStorage.getItem('spons_data'); const n = localStorage.getItem('spons_no'); if(d) data = JSON.parse(d); if(n) nextNo = +n; } catch(e){} }
+load();
+
+function fmt(n) { return n ? Number(n).toLocaleString('ko-KR') + '원' : '-'; }
+function fmtDate(s) { return s ? s.replace(/-/g,'.') : '-'; }
+
+function brandBadge(b) { return `<span class="brand-badge ${BRAND_CLS[b]||''}">${b}</span>`; }
+function chBadge(c) { return `<span class="ch-badge ${c==='인스타'?'ch-insta':'ch-youtube'}"><i class="ti ti-${c==='인스타'?'brand-instagram':'brand-youtube'}" style="font-size:12px"></i>${c}</span>`; }
+function statusBadge(s) { const cls = s==='진행중'?'s-active':s==='예정'?'s-plan':'s-done'; return `<span class="status-badge ${cls}">${s}</span>`; }
+
+function renderMetrics() {
+  const total = data.reduce((a,r)=>a+Number(r.price||0),0);
+  const active = data.filter(r=>r.status==='진행중').length;
+  const plan = data.filter(r=>r.status==='예정').length;
+  const done = data.filter(r=>r.status==='완료').length;
+  document.getElementById('metrics').innerHTML = [
+    {lbl:'총 협찬 비용', val: total.toLocaleString('ko-KR')+'원', sub:'전체 합계'},
+    {lbl:'진행중', val: active+'건', sub:'현재 진행 중인 협찬'},
+    {lbl:'예정', val: plan+'건', sub:'계약 예정'},
+    {lbl:'완료', val: done+'건', sub:'완료된 협찬'},
+  ].map(m=>`<div class="metric-card"><div class="lbl">${m.lbl}</div><div class="val">${m.val}</div><div class="sub">${m.sub}</div></div>`).join('');
+}
+
+function filtered() {
+  const fb = document.getElementById('f-brand').value;
+  const fc = document.getElementById('f-channel').value;
+  const fs = document.getElementById('f-status').value;
+  return data.filter(r=>(!fb||r.brand===fb)&&(!fc||r.channel===fc)&&(!fs||r.status===fs));
+}
+
+function renderTable() {
+  renderMetrics();
+  const rows = filtered();
+  const total = rows.length;
+  const start = (page-1)*PAGE_SIZE;
+  const slice = rows.slice(start, start+PAGE_SIZE);
+  const tbody = document.getElementById('tbody');
+  if(!slice.length) { tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:2rem;color:var(--text3)">데이터가 없습니다</td></tr>`; }
+  else {
+    tbody.innerHTML = slice.map(r=>`<tr>
+      <td style="color:var(--text3)">${r.no}</td>
+      <td>${brandBadge(r.brand)}</td>
+      <td>${chBadge(r.channel)}</td>
+      <td>${r.acct||'-'}</td>
+      <td>${r.product||'-'}</td>
+      <td>${r.option||'-'}</td>
+      <td>${fmtDate(r.contract)}</td>
+      <td>${fmtDate(r.end)}</td>
+      <td>${fmtDate(r.expose)}</td>
+      <td style="font-weight:600">${fmt(r.price)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td><button class="btn-del" onclick="delRow(${r.no})"><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('');
+  }
+  // Pagination
+  const pages = Math.ceil(total/PAGE_SIZE)||1;
+  let btns = '';
+  for(let i=1;i<=pages;i++) btns+=`<button class="page-btn${i===page?' active':''}" data-p="${i}">${i}</button>`;
+  document.getElementById('pagination').innerHTML = `<span>${total}건</span><div class="page-btns">${btns}</div>`;
+  document.querySelectorAll('.page-btn').forEach(b=>b.addEventListener('click',()=>{page=+b.dataset.p;renderTable();}));
+}
+
+function delRow(no) {
+  if(!confirm('삭제하시겠습니까?')) return;
+  data = data.filter(r=>r.no!==no); save(); page=1; renderTable();
+}
+
+['f-brand','f-channel','f-status'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{page=1;renderTable();}));
+
+document.getElementById('openModal').addEventListener('click',()=>document.getElementById('modal').classList.add('open'));
+document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');});
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const brand=document.getElementById('m-brand').value;
+  const channel=document.getElementById('m-channel').value;
+  const acct=document.getElementById('m-acct').value.trim();
+  const product=document.getElementById('m-product').value.trim();
+  const option=document.getElementById('m-option').value.trim();
+  const contract=document.getElementById('m-contract').value;
+  const end=document.getElementById('m-end').value;
+  const expose=document.getElementById('m-expose').value;
+  const price=parseInt(document.getElementById('m-price').value)||0;
+  const status=document.getElementById('m-status').value;
+  const note=document.getElementById('m-note').value.trim();
+  data.push({no:nextNo++,brand,channel,acct,product,option,contract,end,expose,price,status,note});
+  save();
+  document.getElementById('modal').classList.remove('open');
+  ['m-acct','m-product','m-option','m-contract','m-end','m-expose','m-price','m-note'].forEach(id=>document.getElementById(id).value='');
+  page=1; renderTable();
+});
+
+// Monthly
+function changeMonth(dir) { curMonth.setMonth(curMonth.getMonth()+dir); renderMonthly(); }
+function renderMonthly() {
+  const y=curMonth.getFullYear(), m=curMonth.getMonth();
+  document.getElementById('month-label').textContent = `${y}년 ${m+1}월`;
+  const inMonth = (d,field) => { if(!d[field]) return false; const dt=new Date(d[field]); return dt.getFullYear()===y&&dt.getMonth()===m; };
+  const contracts = data.filter(r=>inMonth(r,'contract'));
+  const exposes = data.filter(r=>inMonth(r,'expose'));
+  const totalCost = contracts.reduce((a,r)=>a+Number(r.price||0),0);
+  document.getElementById('month-metrics').innerHTML = [
+    {lbl:'계약 건수', val:contracts.length+'건'},
+    {lbl:'노출 건수', val:exposes.length+'건'},
+    {lbl:'이달 협찬 비용', val:totalCost.toLocaleString('ko-KR')+'원'},
+  ].map(m=>`<div class="metric-card"><div class="lbl">${m.lbl}</div><div class="val">${m.val}</div></div>`).join('');
+  const renderList = (items, containerId) => {
+    const el = document.getElementById(containerId);
+    if(!items.length) { el.innerHTML='<div class="empty">이달 데이터가 없습니다</div>'; return; }
+    el.innerHTML = items.map(r=>`<div class="item-card">
+      <div class="item-left">${brandBadge(r.brand)} ${chBadge(r.channel)} <span style="color:var(--text2)">${r.product||r.acct||'-'}</span></div>
+      <div class="item-price">${fmt(r.price)}</div>
+    </div>`).join('');
+  };
+  renderList(contracts,'list-contract');
+  renderList(exposes,'list-expose');
+}
+
+// Chart
+function renderCharts() {
+  const y = parseInt(document.getElementById('year-select').value);
+  const months = Array.from({length:12},(_,i)=>i);
+  const monthLabels = months.map(m=>`${m+1}월`);
+
+  const destroy = id => { if(charts[id]) { charts[id].destroy(); delete charts[id]; } };
+
+  // Monthly cost by brand (stacked bar)
+  destroy('mc');
+  const mc = document.getElementById('chart-monthly-cost').getContext('2d');
+  const brandDatasets = BRANDS.map((b,bi)=>({
+    label: b,
+    data: months.map(m=>{
+      const row = data.filter(r=>r.brand===b&&r.contract&&new Date(r.contract).getFullYear()===y&&new Date(r.contract).getMonth()===m);
+      return row.reduce((a,r)=>a+Number(r.price||0),0);
+    }),
+    backgroundColor: BRAND_COLORS[bi]+'cc',
+    borderRadius: 3,
+  }));
+  charts['mc'] = new Chart(mc,{type:'bar',data:{labels:monthLabels,datasets:brandDatasets},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>v?v.toLocaleString():'0'}}},plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}});
+
+  // Monthly count
+  destroy('mct');
+  const mct = document.getElementById('chart-monthly-count').getContext('2d');
+  charts['mct'] = new Chart(mct,{type:'bar',data:{labels:monthLabels,datasets:[{label:'계약 건수',data:months.map(m=>data.filter(r=>r.contract&&new Date(r.contract).getFullYear()===y&&new Date(r.contract).getMonth()===m).length),backgroundColor:'#3b82f688',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+
+  // Brand total cost (horizontal bar)
+  destroy('bc');
+  const bc = document.getElementById('chart-brand-cost').getContext('2d');
+  charts['bc'] = new Chart(bc,{type:'bar',data:{labels:BRANDS,datasets:[{label:'협찬 비용',data:BRANDS.map(b=>data.filter(r=>r.brand===b&&(!y||!r.contract||(new Date(r.contract).getFullYear()===y))).reduce((a,r)=>a+Number(r.price||0),0)),backgroundColor:BRAND_COLORS.map(c=>c+'bb'),borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v?v.toLocaleString():'0'}}}}});
+
+  // Channel pie
+  destroy('ch');
+  const ch = document.getElementById('chart-channel').getContext('2d');
+  const insta = data.filter(r=>r.channel==='인스타').length;
+  const yt = data.filter(r=>r.channel==='유튜브').length;
+  charts['ch'] = new Chart(ch,{type:'doughnut',data:{labels:['인스타','유튜브'],datasets:[{data:[insta,yt],backgroundColor:['#e91e8888','#f4433688'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{boxWidth:12,font:{size:11}}}}}});
+}
+
+function showPage(tab) {
+  ['list','monthly','chart'].forEach(t=>{ document.getElementById('page-'+t).style.display = t===tab?'':'none'; });
+  document.querySelectorAll('.page-tab').forEach((btn,i)=>{ btn.classList.toggle('active',['list','monthly','chart'][i]===tab); });
+  if(tab==='monthly') renderMonthly();
+  if(tab==='chart') { populateYearSelect(); renderCharts(); }
+}
+
+function populateYearSelect() {
+  const sel = document.getElementById('year-select');
+  const years = [...new Set(data.map(r=>r.contract?new Date(r.contract).getFullYear():null).filter(Boolean))];
+  const cur = new Date().getFullYear();
+  if(!years.includes(cur)) years.push(cur);
+  years.sort((a,b)=>b-a);
+  const prev = sel.value;
+  sel.innerHTML = years.map(y=>`<option${y===+prev?' selected':''}>${y}</option>`).join('');
+}
+
+document.getElementById('year-select').addEventListener('change', renderCharts);
+
+renderTable();
+</script>
+</body>
+</html>
