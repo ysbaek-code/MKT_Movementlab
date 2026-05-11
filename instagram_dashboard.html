@@ -324,8 +324,24 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='weekly')    renderWeekly();
+  if(name==='weekly')    { autoJumpWeek(); renderWeekly(); }
   if(name==='followers') renderFollowers();
+}
+
+// 데이터가 있는 가장 최근 주로 자동 이동
+function autoJumpWeek() {
+  if(!posts.length) return;
+  // 가장 최근 게시물 날짜
+  const latestDate = posts.reduce((m,p)=> p.date > m ? p.date : m, '');
+  // 해당 날짜가 속한 주의 offset 계산
+  const now = new Date();
+  const day = now.getDay();
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() - (day===0?6:day-1));
+  thisMonday.setHours(0,0,0,0);
+  const targetDate = new Date(latestDate);
+  const diffDays = Math.round((targetDate - thisMonday) / (1000*60*60*24));
+  weekOffset = Math.floor(diffDays / 7);
 }
 
 // ── 유틸 ─────────────────────────────────────────────────
