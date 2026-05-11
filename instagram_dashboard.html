@@ -215,10 +215,18 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
       <div class="metric"><div class="lbl">평균 참여율</div><div class="val" id="wm-eng">-</div></div>
       <div class="metric"><div class="lbl">평균 프로필방문</div><div class="val" id="wm-profile">-</div></div>
     </div>
-    <div class="card">
-      <div class="card-title">이번 주 조회수 · 좋아요</div>
-      <div class="chart-wrap" style="height:220px">
-        <canvas id="weekChart" role="img" aria-label="주간 지표 바 차트">주간 지표</canvas>
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-title">이번 주 조회수 · 좋아요</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="weekChart" role="img" aria-label="주간 지표 바 차트">주간 지표</canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">콘텐츠 구성 비율</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="weekTypeChart" role="img" aria-label="주간 콘텐츠 유형 비율 도넛 차트">콘텐츠 구성 비율</canvas>
+        </div>
       </div>
     </div>
     <div class="table-wrap">
@@ -236,6 +244,12 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
       <div class="btn-row">
         <button class="danger" onclick="clearFollowers()">🗑 초기화</button>
       </div>
+    </div>
+    <div class="metrics-grid" style="margin-bottom:16px;">
+      <div class="metric"><div class="lbl">최신 팔로워</div><div class="val" id="fm-current">-</div></div>
+      <div class="metric"><div class="lbl">누적 증감</div><div class="val" id="fm-total-diff">-</div></div>
+      <div class="metric"><div class="lbl">주간 평균 증감</div><div class="val" id="fm-avg-diff">-</div></div>
+      <div class="metric"><div class="lbl">기록된 주차</div><div class="val" id="fm-weeks">-</div></div>
     </div>
     <div class="card">
       <div class="card-title">팔로워 추이</div>
@@ -288,7 +302,7 @@ const SEED = [
 
 // ── 상태 ─────────────────────────────────────────────────
 let posts=[], followers=[], weekOffset=0;
-let typeChart, viewChart, weekChart, followerChart;
+let typeChart, viewChart, weekChart, weekTypeChart, followerChart;
 const LS_POSTS='ml_ig_posts', LS_FOLL='ml_ig_followers', LS_SEEDED='ml_ig_seeded_v2';
 
 // ── 저장 / 불러오기 ──────────────────────────────────────
@@ -551,12 +565,48 @@ function renderWeekly(){
       plugins:{legend:{labels:{font:{size:12},boxWidth:10}}},
       scales:{x:{ticks:{font:{size:11},autoSkip:false,maxRotation:40}},y:{ticks:{font:{size:11}}}}}
   });
+
+  // ── 콘텐츠 구성 비율 도넛 ────────────────────────────────
+  if(weekTypeChart) weekTypeChart.destroy();
+  const typeCounts={};
+  wp.forEach(p=>typeCounts[p.type]=(typeCounts[p.type]||0)+1);
+  const typeLabels=Object.keys(typeCounts);
+  const typeData=typeLabels.map(l=>typeCounts[l]);
+  const typePct=typeData.map(v=>((v/wp.length)*100).toFixed(0));
+  const palette=['#1a56db','#bf360c','#7b1fa2','#2e7d32','#e65100','#c2185b','#00695c','#3949ab','#558b2f'];
+  weekTypeChart=new Chart(document.getElementById('weekTypeChart'),{
+    type:'doughnut',
+    data:{
+      labels:typeLabels.map((l,i)=>`${l} (${typePct[i]}%)`),
+      datasets:[{data:typeData,backgroundColor:palette.slice(0,typeLabels.length),borderWidth:0}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:8}}}}
+  });
 }
 
 // ── 팔로워 ───────────────────────────────────────────────
 function renderFollowers(){
-  document.getElementById('follower-tbody').innerHTML=followers.length
-    ?followers.map(f=>`<tr>
+  // ── 요약 카드 ─────────────────────────────────────────────
+  const sorted=[...followers].sort((a,b)=>a.date.localeCompare(b.date));
+  const n=sorted.length;
+  const setf=(id,v)=>document.getElementById(id).textContent=v;
+  if(n){
+    const latest=sorted[n-1];
+    const totalDiff=sorted.reduce((s,f)=>s+f.diff,0);
+    const avgDiff=Math.round(totalDiff/n);
+    setf('fm-current', latest.end.toLocaleString()+'명');
+    setf('fm-total-diff', (totalDiff>=0?'+':'')+totalDiff.toLocaleString()+'명');
+    setf('fm-avg-diff', (avgDiff>=0?'+':'')+avgDiff.toLocaleString()+'명');
+    setf('fm-weeks', n+'주');
+    document.getElementById('fm-total-diff').className = 'val '+(totalDiff>=0?'pos':'neg');
+    document.getElementById('fm-avg-diff').className   = 'val '+(avgDiff>=0?'pos':'neg');
+  } else {
+    ['fm-current','fm-total-diff','fm-avg-diff','fm-weeks'].forEach(id=>setf(id,'-'));
+  }
+
+  document.getElementById('follower-tbody').innerHTML=n
+    ?[...followers].sort((a,b)=>b.date.localeCompare(a.date)).map(f=>`<tr>
         <td>${f.date}</td><td>${f.week}</td>
         <td>${f.start.toLocaleString()}</td><td>${f.end.toLocaleString()}</td>
         <td class="${f.diff>=0?'pos':'neg'}">${f.diff>=0?'+':''}${f.diff.toLocaleString()}</td>
@@ -566,7 +616,6 @@ function renderFollowers(){
     :'<tr><td colspan="7" class="empty">팔로워 데이터를 추가해보세요</td></tr>';
 
   if(followerChart) followerChart.destroy();
-  const sorted=[...followers].sort((a,b)=>a.date.localeCompare(b.date));
   if(!sorted.length) return;
   followerChart=new Chart(document.getElementById('followerChart'),{
     type:'line',
