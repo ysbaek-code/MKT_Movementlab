@@ -205,6 +205,16 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
         <button onclick="nextWeek()">다음 주 ▶</button>
       </div>
     </div>
+    <div class="metrics-grid" style="margin-bottom:16px;">
+      <div class="metric"><div class="lbl">게시물 수</div><div class="val" id="wm-count">-</div></div>
+      <div class="metric"><div class="lbl">평균 조회수</div><div class="val" id="wm-views">-</div></div>
+      <div class="metric"><div class="lbl">평균 도달계정</div><div class="val" id="wm-reach">-</div></div>
+      <div class="metric"><div class="lbl">평균 좋아요</div><div class="val" id="wm-likes">-</div></div>
+      <div class="metric"><div class="lbl">평균 저장</div><div class="val" id="wm-saves">-</div></div>
+      <div class="metric"><div class="lbl">평균 공유</div><div class="val" id="wm-shares">-</div></div>
+      <div class="metric"><div class="lbl">평균 참여율</div><div class="val" id="wm-eng">-</div></div>
+      <div class="metric"><div class="lbl">평균 프로필방문</div><div class="val" id="wm-profile">-</div></div>
+    </div>
     <div class="card">
       <div class="card-title">이번 주 조회수 · 좋아요</div>
       <div class="chart-wrap" style="height:220px">
@@ -213,7 +223,7 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>날짜</th><th>유형</th><th>제목</th><th>조회수</th><th>좋아요</th><th>저장</th><th>공유</th></tr></thead>
+        <thead><tr><th>날짜</th><th>유형</th><th>제목</th><th>조회수</th><th>도달계정</th><th>좋아요</th><th>저장</th><th>공유</th><th>프로필방문</th><th>링크클릭</th></tr></thead>
         <tbody id="week-tbody"></tbody>
       </table>
     </div>
@@ -493,14 +503,38 @@ function renderWeekly(){
   const{mon,sun}=getWeekRange(weekOffset);
   document.getElementById('week-lbl').textContent=ds(mon)+' ~ '+ds(sun);
   const wp=posts.filter(p=>p.date>=ds(mon)&&p.date<=ds(sun)).sort((a,b)=>a.date.localeCompare(b.date));
+
+  // ── 주간 평균 카드 ────────────────────────────────────────
+  const n=wp.length;
+  const avg=(key)=>n ? Math.round(wp.reduce((s,p)=>s+p[key],0)/n) : 0;
+  const avgViews  =avg('views');
+  const avgReach  =avg('reach');
+  const avgLikes  =avg('likes');
+  const avgSaves  =avg('saves');
+  const avgShares =avg('shares');
+  const avgProfile=avg('profile');
+  const avgEng    =n&&avgViews ? ((avgLikes+avgSaves+avgShares)/avgViews*100).toFixed(1)+'%' : '-';
+  const set=(id,v)=>document.getElementById(id).textContent=v;
+  set('wm-count',   n ? n+'개' : '-');
+  set('wm-views',   n ? fmt(avgViews)   : '-');
+  set('wm-reach',   n ? fmt(avgReach)   : '-');
+  set('wm-likes',   n ? fmt(avgLikes)   : '-');
+  set('wm-saves',   n ? fmt(avgSaves)   : '-');
+  set('wm-shares',  n ? fmt(avgShares)  : '-');
+  set('wm-eng',     n ? avgEng          : '-');
+  set('wm-profile', n ? fmt(avgProfile) : '-');
+
+  // ── 테이블 ────────────────────────────────────────────────
   document.getElementById('week-tbody').innerHTML=wp.length
     ?wp.map(p=>`<tr>
         <td>${p.date}</td>
         <td><span class="badge" style="${badgeStyle(p.type)}">${p.type}</span></td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;">${p.title}</td>
-        <td>${fmt(p.views)}</td><td>${fmt(p.likes)}</td><td>${fmt(p.saves)}</td><td>${fmt(p.shares)}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">${p.title}</td>
+        <td>${fmt(p.views)}</td><td>${fmt(p.reach)}</td><td>${fmt(p.likes)}</td>
+        <td>${fmt(p.saves)}</td><td>${fmt(p.shares)}</td>
+        <td>${fmt(p.profile)}</td><td>${fmt(p.link)}</td>
       </tr>`).join('')
-    :'<tr><td colspan="7" class="empty">이번 주 게시물이 없어요</td></tr>';
+    :'<tr><td colspan="10" class="empty">이번 주 게시물이 없어요</td></tr>';
 
   if(weekChart) weekChart.destroy();
   if(!wp.length) return;
