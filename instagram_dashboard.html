@@ -1,560 +1,638 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>인스타그램 퍼포먼스 대시보드</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #111; min-height: 100vh; padding: 24px; }
-    @media (prefers-color-scheme: dark) {
-      body { background: #1a1a1a; color: #f0f0f0; }
-      .metric-card { background: #2a2a2a; }
-      .chart-box { background: #222; border-color: #333; }
-      table th { color: #aaa; border-color: #333; }
-      table td { border-color: #333; }
-      td input, td select { color: #f0f0f0; }
-      .date-tab { border-color: #444; color: #aaa; }
-      .date-tab.active { background: #fff; color: #111; border-color: #fff; }
-      .week-tab { border-color: #444; color: #aaa; background: #2a2a2a; }
-      .week-tab.active { background: #cc2366; color: #fff; border-color: #cc2366; }
-      .week-nav-btn { border-color: #444; color: #ccc; background: #2a2a2a; }
-      .week-nav-btn:hover { background: #333; }
-      .save-btn { border-color: #444; color: #f0f0f0; }
-      .save-btn:hover { background: #333; }
-      .week-summary { background: #2a2a2a; border-color: #444; }
-    }
-    .dash { max-width: 1000px; margin: 0 auto; }
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .ig-icon { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); display: flex; align-items: center; justify-content: center; }
-    .ig-icon svg { width: 20px; height: 20px; fill: white; }
-    .title { font-size: 20px; font-weight: 600; }
-    .subtitle { font-size: 13px; color: #888; }
-    .view-tabs { display: flex; gap: 4px; }
-    .date-tab { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #ddd; background: transparent; cursor: pointer; color: #666; transition: all .15s; }
-    .date-tab.active { background: #111; color: #fff; border-color: #111; font-weight: 500; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
-    .metric-card { background: #f0f0f0; border-radius: 10px; padding: 1rem; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
-    .metric-card:hover { border-color: #ccc; }
-    .metric-card.selected { border-color: #cc2366; }
-    .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
-    .metric-value { font-size: 22px; font-weight: 600; line-height: 1.1; }
-    .metric-delta { font-size: 11px; margin-top: 4px; }
-    .delta-up { color: #1D9E75; }
-    .delta-down { color: #D85A30; }
-    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
-    @media (max-width: 600px) { .chart-row { grid-template-columns: 1fr; } }
-    .chart-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 14px; padding: 1rem 1.25rem; }
-    .chart-box.full { grid-column: 1 / -1; }
-    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-    .chart-title { font-size: 13px; font-weight: 600; }
-    .legend { display: flex; gap: 12px; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #888; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .add-row-btn { font-size: 12px; color: #cc2366; background: transparent; border: none; cursor: pointer; padding: 0; font-weight: 500; }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; font-size: 13px; border-collapse: collapse; }
-    th { font-size: 11px; font-weight: 600; color: #888; text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; white-space: nowrap; }
-    td { padding: 8px 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
-    td input { background: transparent; border: none; font-size: 13px; width: 80px; font-family: inherit; outline: none; }
-    td input:focus { border-bottom: 1.5px solid #cc2366; }
-    .tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
-    .tag-product   { background: #EEEDFE; color: #3C3489; }
-    .tag-promo     { background: #E1F5EE; color: #085041; }
-    .tag-lifestyle { background: #FAECE7; color: #712B13; }
-    .save-btn { font-size: 12px; padding: 6px 16px; border-radius: 8px; border: 1px solid #ccc; background: transparent; cursor: pointer; }
-    .save-btn:hover { background: #f0f0f0; }
-    .bottom-bar { display: flex; justify-content: flex-end; margin-top: 12px; gap: 8px; }
-    .export-btn { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid #cc2366; color: #cc2366; background: transparent; cursor: pointer; }
-    .export-btn:hover { background: #fdf0f5; }
-    .view-panel { display: none; }
-    .view-panel.active { display: block; }
-    .week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-    .week-nav-btn { font-size: 13px; padding: 6px 16px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
-    .week-nav-btn:hover { background: #f5f5f5; }
-    .week-label { font-size: 14px; font-weight: 600; flex: 1; text-align: center; }
-    .week-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .week-tab { font-size: 11px; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; color: #666; white-space: nowrap; transition: all .15s; }
-    .week-tab.active { background: #cc2366; color: #fff; border-color: #cc2366; font-weight: 500; }
-    .week-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 10px; margin-bottom: 1.5rem; background: #f8f8f8; border-radius: 12px; padding: 1rem; border: 1px solid #eee; }
-    .week-stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
-    .week-stat-val { font-size: 20px; font-weight: 600; }
-    .week-stat-delta { font-size: 11px; margin-top: 2px; }
-    .week-compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
-    @media (max-width: 600px) { .week-compare-row { grid-template-columns: 1fr; } }
-    .no-data { text-align: center; padding: 2rem; font-size: 13px; color: #aaa; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인스타그램 퍼포먼스 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ffffff;
+  --bg2: #f7f7f5;
+  --bg3: #f0efe9;
+  --text: #1a1a18;
+  --text2: #6b6b67;
+  --text3: #a0a09c;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.2);
+  --radius: 10px;
+  --radius-lg: 14px;
+  --accent: #1a56db;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1a;
+    --bg2: #252523;
+    --bg3: #1a1a18;
+    --text: #f0efe9;
+    --text2: #a0a09c;
+    --text3: #6b6b67;
+    --border: rgba(255,255,255,0.1);
+    --border2: rgba(255,255,255,0.2);
+  }
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+  background: var(--bg3);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.app { max-width: 1100px; margin: 0 auto; padding: 28px 16px 80px; }
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
+}
+.header-left h1 { font-size: 20px; font-weight: 600; }
+.header-left p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.save-badge {
+  font-size: 12px; color: var(--text2); background: var(--bg);
+  border: 0.5px solid var(--border2); border-radius: 100px;
+  padding: 6px 14px; display: flex; align-items: center; gap: 5px;
+  transition: color .3s;
+}
+.save-badge.ok { color: #2e7d32; }
+
+.metrics-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.metric {
+  background: var(--bg); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+}
+.metric .lbl { font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+.metric .val { font-size: 22px; font-weight: 600; line-height: 1.2; }
+
+.tabs {
+  display: flex; gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.tab-btn {
+  padding: 9px 18px; font-size: 14px; background: none; border: none;
+  border-bottom: 2px solid transparent; cursor: pointer; color: var(--text2);
+  margin-bottom: -1px; font-family: inherit; transition: color .15s;
+}
+.tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.card {
+  background: var(--bg); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px;
+}
+.card-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 12px; }
+
+.charts-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px; margin-bottom: 16px;
+}
+.chart-wrap { position: relative; width: 100%; }
+
+.section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+}
+.section-title { font-size: 14px; font-weight: 500; }
+.btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+button {
+  padding: 7px 14px; font-size: 12px;
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  background: var(--bg); color: var(--text);
+  cursor: pointer; font-family: inherit;
+  transition: background .1s, opacity .1s;
+  display: inline-flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+}
+button:hover { background: var(--bg2); }
+button.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+button.primary:hover { opacity: .82; }
+button.danger { color: #c0392b; border-color: #c0392b; }
+button.danger:hover { background: #fdf2f2; }
+
+.table-wrap {
+  overflow-x: auto; border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--bg2); padding: 10px 12px; text-align: left;
+  font-size: 11px; font-weight: 500; color: var(--text2);
+  border-bottom: 0.5px solid var(--border); white-space: nowrap;
+}
+td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); white-space: nowrap; font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg2); }
+
+.add-panel {
+  background: var(--bg2); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px; margin-top: 12px;
+}
+.add-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px; margin-bottom: 10px;
+}
+.add-grid.wide { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.field-lbl { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+input, select {
+  width: 100%; padding: 7px 9px; font-size: 13px; font-family: inherit;
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  background: var(--bg); color: var(--text);
+}
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.add-actions { display: flex; justify-content: flex-end; gap: 7px; flex-wrap: wrap; }
+
+.badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 100px;
+  font-weight: 500; display: inline-block;
+}
+.badge-릴스  { background: #e8f0fe; color: #1a56db; }
+.badge-피드  { background: #e8f5e9; color: #2e7d32; }
+.badge-스토리 { background: #fff3e0; color: #e65100; }
+.badge-카루셀 { background: #f3e8fd; color: #7b1fa2; }
+
+.empty { text-align: center; padding: 28px; color: var(--text3); font-size: 13px; }
+
+.del-btn { padding: 3px 8px; font-size: 11px; color: var(--text3); border-color: var(--border); }
+
+.week-nav { display: flex; align-items: center; gap: 8px; }
+.week-lbl { font-size: 13px; color: var(--text2); min-width: 180px; text-align: center; }
+.week-nav button { padding: 5px 12px; }
+
+.pos { color: #2e7d32; font-weight: 500; }
+.neg { color: #c0392b; font-weight: 500; }
+</style>
 </head>
 <body>
-<div class="dash">
+<div class="app">
 
   <div class="header">
     <div class="header-left">
-      <div class="ig-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-      </div>
-      <div>
-        <div class="title">인스타그램 퍼포먼스</div>
-        <div class="subtitle" id="date-label">전체 데이터</div>
-      </div>
+      <h1>📊 인스타그램 퍼포먼스</h1>
+      <p>Movementlab · 데이터는 이 브라우저에 자동 저장됩니다</p>
     </div>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <div class="view-tabs">
-        <button class="date-tab active" onclick="switchView('overall',this)">전체</button>
-        <button class="date-tab" onclick="switchView('weekly',this)">주단위 분석</button>
-      </div>
-      <button class="save-btn" onclick="exportCSV()">CSV 내보내기</button>
-      <button class="save-btn" style="color:#D85A30;border-color:#D85A30;" onclick="resetData()">초기화</button>
-      <span id="save-status" style="font-size:11px;color:#1D9E75;"></span>
-    </div>
+    <div class="save-badge" id="save-badge">💾 불러오는 중...</div>
   </div>
 
-  <!-- 전체 뷰 -->
-  <div id="panel-overall" class="view-panel active">
-    <div class="metrics-grid" id="metrics-grid"></div>
-    <div class="chart-row">
-      <div class="chart-box full">
-        <div class="chart-header">
-          <span class="chart-title">주요 지표 추이</span>
-          <div class="legend" id="chart-legend"></div>
-        </div>
-        <div style="position:relative;width:100%;height:200px;">
-          <canvas id="trendChart" role="img" aria-label="주요 지표 추이 차트"></canvas>
-        </div>
-      </div>
-      <div class="chart-box">
-        <div class="chart-header"><span class="chart-title">콘텐츠 유형별 비중</span></div>
-        <div id="type-legend" class="legend" style="margin-bottom:8px;"></div>
-        <div style="position:relative;width:100%;height:160px;">
-          <canvas id="typeChart" role="img" aria-label="콘텐츠 유형별 비중 차트"></canvas>
-        </div>
-      </div>
-      <div class="chart-box">
-        <div class="chart-header"><span class="chart-title">참여 유형 분포</span></div>
-        <div style="position:relative;width:100%;height:180px;">
-          <canvas id="engageChart" role="img" aria-label="참여 유형 분포 차트"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="chart-box">
-      <div class="chart-header">
-        <span class="chart-title">게시물 데이터 입력</span>
-        <button class="add-row-btn" onclick="addRow()">+ 행 추가</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>날짜</th><th>유형</th><th>콘텐츠 제목</th><th>조회수</th><th>도달계정</th><th>좋아요</th><th>저장</th><th>공유</th><th>프로필방문</th><th>외부링크클릭</th></tr></thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
-      <div class="bottom-bar">
-        <button class="export-btn" onclick="exportCSV()">CSV 내보내기</button>
-      </div>
-    </div>
+  <!-- 요약 지표 -->
+  <div class="metrics-grid">
+    <div class="metric"><div class="lbl">총 게시물</div><div class="val" id="m-total">0</div></div>
+    <div class="metric"><div class="lbl">총 조회수</div><div class="val" id="m-views">-</div></div>
+    <div class="metric"><div class="lbl">총 좋아요</div><div class="val" id="m-likes">-</div></div>
+    <div class="metric"><div class="lbl">평균 참여율</div><div class="val" id="m-eng">-</div></div>
+    <div class="metric"><div class="lbl">총 저장</div><div class="val" id="m-saves">-</div></div>
+    <div class="metric"><div class="lbl">총 공유</div><div class="val" id="m-shares">-</div></div>
   </div>
 
-  <!-- 주단위 분석 뷰 -->
-  <div id="panel-weekly" class="view-panel">
-    <div class="week-nav">
-      <button class="week-nav-btn" onclick="prevWeek()">◀ 이전 주</button>
-      <span class="week-label" id="week-label">-</span>
-      <button class="week-nav-btn" onclick="nextWeek()">다음 주 ▶</button>
-    </div>
-    <div class="week-tabs" id="week-tabs"></div>
-    <div class="week-summary" id="week-summary"></div>
-    <div class="week-compare-row">
-      <div class="chart-box">
-        <div class="chart-header"><span class="chart-title">이번 주 지표 추이</span></div>
-        <div style="position:relative;width:100%;height:200px;">
-          <canvas id="weekTrendChart" role="img" aria-label="주간 지표 추이"></canvas>
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('posts',this)">게시물 데이터</button>
+    <button class="tab-btn" onclick="switchTab('weekly',this)">주단위 분석</button>
+    <button class="tab-btn" onclick="switchTab('followers',this)">팔로워 현황</button>
+  </div>
+
+  <!-- ===== 게시물 탭 ===== -->
+  <div id="tab-posts" class="tab-pane active">
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-title">콘텐츠 유형별 비중</div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="typeChart" role="img" aria-label="콘텐츠 유형별 비중 도넛 차트">유형별 비중</canvas>
         </div>
       </div>
-      <div class="chart-box">
-        <div class="chart-header"><span class="chart-title">전주 대비 비교</span></div>
-        <div style="position:relative;width:100%;height:200px;">
-          <canvas id="weekCompareChart" role="img" aria-label="전주 대비 비교 차트"></canvas>
+      <div class="card">
+        <div class="card-title">조회수 추이 (최근 15개)</div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="viewChart" role="img" aria-label="조회수 추이 라인 차트">조회수 추이</canvas>
         </div>
-      </div>
-    </div>
-    <div class="chart-box" style="margin-bottom:1rem;">
-      <div class="chart-header"><span class="chart-title">콘텐츠 유형별 조회수</span></div>
-      <div style="position:relative;width:100%;height:200px;">
-        <canvas id="weekTypeChart" role="img" aria-label="주간 콘텐츠 유형별 조회수"></canvas>
       </div>
     </div>
 
-    <!-- 팔로워 주단위 입력 -->
-    <div class="chart-box" style="margin-bottom:1rem;">
-      <div class="chart-header">
-        <span class="chart-title">📈 팔로워 현황 (주단위 직접 입력)</span>
-        <button class="add-row-btn" onclick="addFollowerRow()">+ 주 추가</button>
+    <div class="section-hd">
+      <span class="section-title">게시물 데이터</span>
+      <div class="btn-row">
+        <button onclick="exportCSV()">⬇ CSV 내보내기</button>
+        <button class="danger" onclick="clearPosts()">🗑 전체 초기화</button>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>주 시작일</th><th>주차</th><th>시작 팔로워</th><th>마감 팔로워</th><th>증감</th><th>증감률</th></tr></thead>
-          <tbody id="follower-table-body"></tbody>
-        </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>날짜</th><th>유형</th><th>콘텐츠 제목</th>
+            <th>조회수</th><th>도달계정</th><th>좋아요</th>
+            <th>저장</th><th>공유</th><th>프로필방문</th><th>링크클릭</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="posts-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="add-panel">
+      <div class="add-grid">
+        <div><div class="field-lbl">날짜</div><input type="date" id="n-date"></div>
+        <div><div class="field-lbl">유형</div>
+          <select id="n-type">
+            <option>릴스</option><option>피드</option><option>스토리</option><option>카루셀</option>
+          </select>
+        </div>
+        <div style="grid-column: span 2"><div class="field-lbl">콘텐츠 제목</div><input type="text" id="n-title" placeholder="제목 입력"></div>
+        <div><div class="field-lbl">조회수</div><input type="number" id="n-views" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">도달계정</div><input type="number" id="n-reach" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">좋아요</div><input type="number" id="n-likes" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">저장</div><input type="number" id="n-saves" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">공유</div><input type="number" id="n-shares" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">프로필방문</div><input type="number" id="n-profile" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">외부링크클릭</div><input type="number" id="n-link" placeholder="0" min="0"></div>
       </div>
-      <div style="position:relative;width:100%;height:200px;margin-top:1rem;">
-        <canvas id="followerChart" role="img" aria-label="팔로워 추이 차트"></canvas>
+      <div class="add-actions">
+        <button class="primary" onclick="addPost()">+ 행 추가</button>
       </div>
     </div>
   </div>
 
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <!-- ===== 주단위 탭 ===== -->
+  <div id="tab-weekly" class="tab-pane">
+    <div class="section-hd">
+      <span class="section-title">주단위 분석</span>
+      <div class="week-nav">
+        <button onclick="prevWeek()">◀ 이전 주</button>
+        <span class="week-lbl" id="week-lbl">-</span>
+        <button onclick="nextWeek()">다음 주 ▶</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">이번 주 조회수 · 좋아요</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="weekChart" role="img" aria-label="주간 조회수 및 좋아요 바 차트">주간 지표</canvas>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>날짜</th><th>유형</th><th>제목</th><th>조회수</th><th>좋아요</th><th>저장</th><th>공유</th></tr></thead>
+        <tbody id="week-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 팔로워 탭 ===== -->
+  <div id="tab-followers" class="tab-pane">
+    <div class="section-hd">
+      <span class="section-title">팔로워 현황 (주단위 직접 입력)</span>
+      <div class="btn-row">
+        <button class="danger" onclick="clearFollowers()">🗑 초기화</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">팔로워 추이</div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="followerChart" role="img" aria-label="팔로워 추이 라인 차트">팔로워 추이</canvas>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>주 시작일</th><th>주차</th><th>시작 팔로워</th><th>마감 팔로워</th><th>증감</th><th>증감률</th><th></th></tr></thead>
+        <tbody id="follower-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="add-panel">
+      <div class="add-grid wide">
+        <div><div class="field-lbl">주 시작일</div><input type="date" id="f-date"></div>
+        <div><div class="field-lbl">주차 (예: 1주차)</div><input type="text" id="f-week" placeholder="1주차"></div>
+        <div><div class="field-lbl">시작 팔로워</div><input type="number" id="f-start" placeholder="0" min="0"></div>
+        <div><div class="field-lbl">마감 팔로워</div><input type="number" id="f-end" placeholder="0" min="0"></div>
+      </div>
+      <div class="add-actions">
+        <button class="primary" onclick="addFollower()">+ 주 추가</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
 <script>
-const METRICS = [
-  { key:'views',        label:'총 조회수',     color:'#cc2366', fmt: v => v>=10000?Math.round(v/1000)+'K':v.toLocaleString() },
-  { key:'reach',        label:'도달계정',      color:'#185FA5', fmt: v => v.toLocaleString() },
-  { key:'likes',        label:'좋아요',        color:'#A32D2D', fmt: v => v.toLocaleString() },
-  { key:'saves',        label:'저장',          color:'#1D9E75', fmt: v => v.toLocaleString() },
-  { key:'shares',       label:'공유',          color:'#BA7517', fmt: v => v.toLocaleString() },
-  { key:'profile_visit',label:'프로필 방문',   color:'#534AB7', fmt: v => v.toLocaleString() },
-  { key:'link_click',   label:'외부링크 클릭', color:'#0E7A6E', fmt: v => v.toLocaleString() },
-];
-const TYPES = ['제품 큐레이션','프로모션','공간 및 라이프스타일'];
-const TYPE_COLORS = ['#cc2366','#185FA5','#BA7517'];
+// ─── 상태 ───────────────────────────────────────────────
+let posts     = [];
+let followers = [];
+let weekOffset = 0;
+let typeChart, viewChart, weekChart, followerChart;
 
-let tableData = [
-  { date:'2026-04-28', type:'공간 및 라이프스타일', title:'훌쩍 떠나고픈 이번 주말. 쉬어가는 무브먼트 스테이 4',           views:20593, reach:10626, likes:42,  saves:66,  shares:29, profile_visit:57,  link_click:24  },
-  { date:'2026-04-29', type:'공간 및 라이프스타일', title:'제주의 자연 속에서 취향을 마주하며 앉는다는 것',                views:12189, reach:4795,  likes:31,  saves:8,   shares:0,  profile_visit:0,   link_click:0   },
-  { date:'2026-04-29', type:'프로모션',             title:'매직볼트 베스트셀러, 세컨드마켓 리퍼브세일 오픈',              views:28024, reach:13036, likes:34,  saves:58,  shares:41, profile_visit:96,  link_click:287 },
-  { date:'2026-04-30', type:'프로모션',             title:'4월 5주차 온라인 세컨드마켓 NEW IN',                           views:15494, reach:6630,  likes:20,  saves:13,  shares:7,  profile_visit:36,  link_click:17  },
-  { date:'2026-04-30', type:'제품 큐레이션',        title:'비건 발효 음식, 차와 와인 모두 즐길 수 있는 퍼멘츠 한남 오픈',  views:29658, reach:10917, likes:248, saves:112, shares:88, profile_visit:49,  link_click:1   },
-  { date:'2026-05-01', type:'공간 및 라이프스타일', title:'오사카 헤어디자이너의 집에는 어떤 가구가 있을까?',              views:22601, reach:11298, likes:72,  saves:70,  shares:6,  profile_visit:51,  link_click:8   },
-  { date:'2026-05-02', type:'제품 큐레이션',        title:'큐브를 조립하듯 자유롭게, 파사드 쉘프 모듈 가이드',            views:14251, reach:6280,  likes:17,  saves:21,  shares:3,  profile_visit:21,  link_click:7   },
-  { date:'2026-05-03', type:'제품 큐레이션',        title:'May for Me! 나에게 선물하는 자리 하나',                        views:17775, reach:7675,  likes:42,  saves:64,  shares:20, profile_visit:34,  link_click:6   },
-];
+const LS_POSTS = 'ml_ig_posts';
+const LS_FOLL  = 'ml_ig_followers';
 
-// 주단위 팔로워 직접 입력 데이터 { weekStart, startFollowers, endFollowers }
-let followerData = [
-  { weekStart:'2026-04-27', startFollowers:12400, endFollowers:12521 },
-];
-
-let selectedMetric = 'views';
-let trendChart, typeChart, engChart, weekTrendChart, weekCompareChart, weekTypeChart;
-let currentWeekIdx = 0;
-
-function getWeekStart(dateStr) {
-  const d = new Date(dateStr);
-  const day = d.getDay();
-  const diff = day===0 ? -6 : 1-day;
-  d.setDate(d.getDate()+diff);
-  return d.toISOString().slice(0,10);
+// ─── 저장 / 불러오기 ────────────────────────────────────
+function save() {
+  try {
+    localStorage.setItem(LS_POSTS, JSON.stringify(posts));
+    localStorage.setItem(LS_FOLL,  JSON.stringify(followers));
+    const t = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+    setBadge('✅ 저장됨 · ' + t, true);
+  } catch(e) {
+    setBadge('⚠️ 저장 실패', false);
+  }
+}
+function load() {
+  try {
+    const p = localStorage.getItem(LS_POSTS);
+    const f = localStorage.getItem(LS_FOLL);
+    if (p) posts     = JSON.parse(p);
+    if (f) followers = JSON.parse(f);
+    setBadge('📂 불러오기 완료', true);
+  } catch(e) {
+    setBadge('새 데이터', false);
+  }
+  renderAll();
+}
+function setBadge(txt, ok) {
+  const el = document.getElementById('save-badge');
+  el.textContent = txt;
+  el.className = 'save-badge' + (ok ? ' ok' : '');
 }
 
-function formatWeekLabel(ws) {
-  const s = new Date(ws), e = new Date(ws);
-  e.setDate(e.getDate()+6);
-  const f = d => `${d.getMonth()+1}/${d.getDate()}`;
-  return `${s.getFullYear()}년 ${f(s)} ~ ${f(e)}`;
-}
-
-function getWeeks() {
-  return [...new Set(tableData.map(r=>getWeekStart(r.date)))].sort();
-}
-
-function getWeekData(idx) {
-  const weeks = getWeeks();
-  if (!weeks[idx]) return [];
-  const ws = weeks[idx];
-  const we = new Date(ws); we.setDate(we.getDate()+6);
-  return tableData.filter(r => r.date>=ws && r.date<=we.toISOString().slice(0,10));
-}
-
-function calcTotals(data) {
-  const t = {};
-  METRICS.forEach(m => t[m.key] = (data||tableData).reduce((s,r)=>s+(+r[m.key]||0),0));
-  return t;
-}
-
-function calcDeltas(data) {
-  data = data||tableData;
-  const half = Math.floor(data.length/2), d = {};
-  METRICS.forEach(m => {
-    const r = data.slice(half).reduce((s,row)=>s+(+row[m.key]||0),0);
-    const p = data.slice(0,half).reduce((s,row)=>s+(+row[m.key]||0),0);
-    d[m.key] = p===0?0:Math.round((r-p)/p*100);
-  });
-  return d;
-}
-
-function renderMetrics() {
-  const totals=calcTotals(), deltas=calcDeltas();
-  const grid=document.getElementById('metrics-grid'); grid.innerHTML='';
-
-  // 팔로워 카드 (followerData에서 최신 마감 팔로워 표시)
-  const sortedF = [...followerData].sort((a,b)=>b.weekStart.localeCompare(a.weekStart));
-  const latestF = sortedF[0] || null;
-  const currFollowers = latestF ? (latestF.endFollowers||0) : 0;
-  const prevFollowers = sortedF[1] ? (sortedF[1].endFollowers||0) : (latestF ? latestF.startFollowers||0 : 0);
-  const fDiff = currFollowers - prevFollowers;
-  const fRate = prevFollowers > 0 ? Math.round(fDiff/prevFollowers*100) : 0;
-  const fCard = document.createElement('div');
-  fCard.className = 'metric-card';
-  fCard.style.borderColor = '#cc2366';
-  fCard.innerHTML = `
-    <div class="metric-label">현재 팔로워</div>
-    <div class="metric-value">${currFollowers>=10000?Math.round(currFollowers/1000)+'K':currFollowers.toLocaleString()}</div>
-    <div class="metric-delta ${fDiff>=0?'delta-up':'delta-down'}">${fDiff>=0?'▲':'▼'} ${Math.abs(fRate)}% 전주 대비</div>
-    <div style="font-size:10px;color:#aaa;margin-top:2px;">주단위 분석 탭에서 입력</div>
-  `;
-  fCard.onclick = () => { document.querySelector('[onclick*="weekly"]').click(); };
-  grid.appendChild(fCard);
-
-  METRICS.forEach(m => {
-    const delta=deltas[m.key], card=document.createElement('div');
-    card.className='metric-card'+(selectedMetric===m.key?' selected':'');
-    card.innerHTML=`<div class="metric-label">${m.label}</div><div class="metric-value">${m.fmt(totals[m.key])}</div><div class="metric-delta ${delta>=0?'delta-up':'delta-down'}">${delta>=0?'▲':'▼'} ${Math.abs(delta)}%</div>`;
-    card.onclick=()=>{ selectedMetric=m.key; renderMetrics(); renderTrendChart(); };
-    grid.appendChild(card);
-  });
-}
-
-function renderTrendChart() {
-  const m=METRICS.find(x=>x.key===selectedMetric);
-  document.getElementById('chart-legend').innerHTML=`<span class="legend-item"><span class="legend-dot" style="background:${m.color}"></span>${m.label}</span>`;
-  if(trendChart) trendChart.destroy();
-  trendChart=new Chart(document.getElementById('trendChart'),{
-    type:'line',
-    data:{labels:tableData.map(r=>r.date.slice(5)),datasets:[{label:m.label,data:tableData.map(r=>+r[m.key]||0),borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:m.color}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}
-  });
-}
-
-function renderTypeChart() {
-  const counts={}; TYPES.forEach(t=>counts[t]=0);
-  tableData.forEach(r=>{if(counts[r.type]!==undefined)counts[r.type]++;});
-  const values=Object.values(counts), total=values.reduce((a,b)=>a+b,0);
-  document.getElementById('type-legend').innerHTML=TYPES.map((l,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${TYPE_COLORS[i]}"></span>${l} ${total>0?Math.round(values[i]/total*100):0}%</span>`).join('');
-  if(typeChart) typeChart.destroy();
-  typeChart=new Chart(document.getElementById('typeChart'),{type:'doughnut',data:{labels:TYPES,datasets:[{data:values,backgroundColor:TYPE_COLORS,borderWidth:2,borderColor:'transparent'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}});
-}
-
-function renderEngageChart() {
-  const t=calcTotals();
-  if(engChart) engChart.destroy();
-  engChart=new Chart(document.getElementById('engageChart'),{type:'bar',data:{labels:['좋아요','저장','공유','프로필방문','링크클릭'],datasets:[{data:[t.likes,t.saves,t.shares,t.profile_visit,t.link_click],backgroundColor:['#A32D2D','#1D9E75','#BA7517','#534AB7','#0E7A6E'],borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}},y:{grid:{display:false},ticks:{font:{size:11}}}}}});
-}
-
-function renderTable() {
-  const tbody=document.getElementById('table-body'); tbody.innerHTML='';
-  tableData.forEach((row,i)=>{
-    const tc=row.type==='제품 큐레이션'?'tag-product':row.type==='프로모션'?'tag-promo':'tag-lifestyle';
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input value="${row.date}" onchange="updateCell(${i},'date',this.value)" style="width:95px"></td><td><select onchange="updateCell(${i},'type',this.value)" style="background:transparent;border:none;font-size:13px;cursor:pointer;font-family:inherit;outline:none;">${TYPES.map(t=>`<option ${t===row.type?'selected':''}>${t}</option>`).join('')}</select></td><td><input value="${row.title||''}" onchange="updateCell(${i},'title',this.value)" style="width:160px"></td><td><input type="number" value="${row.views}" onchange="updateCell(${i},'views',+this.value)"></td><td><input type="number" value="${row.reach}" onchange="updateCell(${i},'reach',+this.value)"></td><td><input type="number" value="${row.likes}" onchange="updateCell(${i},'likes',+this.value)"></td><td><input type="number" value="${row.saves}" onchange="updateCell(${i},'saves',+this.value)"></td><td><input type="number" value="${row.shares}" onchange="updateCell(${i},'shares',+this.value)"></td><td><input type="number" value="${row.profile_visit||0}" onchange="updateCell(${i},'profile_visit',+this.value)"></td><td><input type="number" value="${row.link_click||0}" onchange="updateCell(${i},'link_click',+this.value)"></td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function updateCell(i,key,val){ tableData[i][key]=val; renderAll(); if(key==='type'||key==='date') renderTable(); }
-function addRow(){ tableData.push({date:new Date().toISOString().slice(0,10),type:'제품 큐레이션',title:'',views:0,reach:0,likes:0,saves:0,shares:0,profile_visit:0,link_click:0}); renderTable(); renderAll(); }
-
-// 주단위 뷰
-function renderWeekTabs() {
-  const weeks=getWeeks(), container=document.getElementById('week-tabs'); container.innerHTML='';
-  weeks.forEach((w,i)=>{
-    const btn=document.createElement('button');
-    btn.className='week-tab'+(i===currentWeekIdx?' active':'');
-    btn.textContent=formatWeekLabel(w);
-    btn.onclick=()=>{ currentWeekIdx=i; renderWeekView(); };
-    container.appendChild(btn);
-  });
-}
-
-function renderWeekSummary() {
-  const curr=getWeekData(currentWeekIdx), prev=getWeekData(currentWeekIdx-1);
-  const ct=calcTotals(curr), pt=calcTotals(prev);
-  const container=document.getElementById('week-summary');
-  if(!curr.length){container.innerHTML='<div class="no-data">이번 주 데이터가 없습니다.</div>';return;}
-  container.innerHTML=METRICS.map(m=>{
-    const delta=pt[m.key]>0?Math.round((ct[m.key]-pt[m.key])/pt[m.key]*100):null;
-    const dHtml=delta!==null?`<div class="week-stat-delta ${delta>=0?'delta-up':'delta-down'}">${delta>=0?'▲':'▼'} ${Math.abs(delta)}% 전주 대비</div>`:`<div class="week-stat-delta" style="color:#bbb">전주 데이터 없음</div>`;
-    return `<div><div class="week-stat-label">${m.label}</div><div class="week-stat-val">${m.fmt(ct[m.key])}</div>${dHtml}</div>`;
-  }).join('');
-}
-
-function renderWeekTrendChart() {
-  const curr=getWeekData(currentWeekIdx);
-  if(weekTrendChart) weekTrendChart.destroy();
-  if(!curr.length) return;
-  const m=METRICS.find(x=>x.key===selectedMetric);
-  weekTrendChart=new Chart(document.getElementById('weekTrendChart'),{type:'line',data:{labels:curr.map(r=>r.date.slice(5)),datasets:[{label:m.label,data:curr.map(r=>+r[m.key]||0),borderColor:m.color,backgroundColor:m.color+'22',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:m.color}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}});
-}
-
-function renderWeekCompareChart() {
-  const curr=getWeekData(currentWeekIdx), prev=getWeekData(currentWeekIdx-1);
-  if(weekCompareChart) weekCompareChart.destroy();
-  const keys=['views','likes','saves','shares','profile_visit','link_click'], keyLabels=['조회수','좋아요','저장','공유','프로필방문','링크클릭'];
-  const ct=calcTotals(curr), pt=calcTotals(prev);
-  const datasets=[{label:'이번 주',data:keys.map(k=>ct[k]||0),backgroundColor:'#cc2366',borderRadius:4,borderSkipped:false}];
-  if(prev.length) datasets.push({label:'전주',data:keys.map(k=>pt[k]||0),backgroundColor:'#cccccc',borderRadius:4,borderSkipped:false});
-  weekCompareChart=new Chart(document.getElementById('weekCompareChart'),{type:'bar',data:{labels:keyLabels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}});
-}
-
-function renderWeekTypeChart() {
-  const curr=getWeekData(currentWeekIdx);
-  if(weekTypeChart) weekTypeChart.destroy();
-  if(!curr.length) return;
-  const tv={}; TYPES.forEach(t=>tv[t]=0);
-  curr.forEach(r=>{if(tv[r.type]!==undefined)tv[r.type]+=(+r.views||0);});
-  weekTypeChart=new Chart(document.getElementById('weekTypeChart'),{type:'bar',data:{labels:TYPES,datasets:[{label:'조회수',data:TYPES.map(t=>tv[t]),backgroundColor:TYPE_COLORS,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:11},callback:v=>v>=1000?Math.round(v/1000)+'K':v}}}}});
-}
-
-function renderWeekView() {
-  const weeks=getWeeks();
-  if(!weeks.length) return;
-  currentWeekIdx=Math.max(0,Math.min(currentWeekIdx,weeks.length-1));
-  document.getElementById('week-label').textContent=formatWeekLabel(weeks[currentWeekIdx]);
-  renderWeekTabs(); renderWeekSummary(); renderWeekTrendChart(); renderWeekCompareChart(); renderWeekTypeChart(); renderFollowerTable(); renderFollowerChart();
-}
-
-function prevWeek(){ if(currentWeekIdx>0){currentWeekIdx--;renderWeekView();} }
-function nextWeek(){ const w=getWeeks(); if(currentWeekIdx<w.length-1){currentWeekIdx++;renderWeekView();} }
-
-function switchView(view, btn) {
-  document.querySelectorAll('.date-tab').forEach(b=>b.classList.remove('active'));
+// ─── 탭 ─────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
-  document.getElementById('panel-overall').classList.toggle('active',view==='overall');
-  document.getElementById('panel-weekly').classList.toggle('active',view==='weekly');
-  document.getElementById('date-label').textContent=view==='overall'?'전체 데이터':'주단위 분석';
-  if(view==='weekly'){ currentWeekIdx=getWeeks().length-1; renderWeekView(); }
+  if (name === 'weekly')    renderWeekly();
+  if (name === 'followers') renderFollowers();
 }
 
-// 팔로워 주단위 기능
-let followerChart;
+// ─── 숫자 포맷 ──────────────────────────────────────────
+function fmt(n) {
+  n = parseInt(n) || 0;
+  if (n >= 10000) return (n/10000).toFixed(1) + '만';
+  if (n >= 1000)  return (n/1000).toFixed(1) + 'k';
+  return n.toLocaleString();
+}
 
-function renderFollowerTable() {
-  const tbody = document.getElementById('follower-table-body');
-  tbody.innerHTML = '';
-  const sorted = [...followerData].sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
-  sorted.forEach((row, i) => {
-    const diff = (row.endFollowers||0) - (row.startFollowers||0);
-    const rate = row.startFollowers > 0 ? (diff/row.startFollowers*100).toFixed(1) : '-';
-    const diffColor = diff >= 0 ? '#1D9E75' : '#D85A30';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input value="${row.weekStart}" onchange="updateFollower(${i},'weekStart',this.value)" style="width:100px"></td>
-      <td style="color:#888;font-size:12px;">${formatWeekLabel(row.weekStart)}</td>
-      <td><input type="number" value="${row.startFollowers||0}" onchange="updateFollower(${i},'startFollowers',+this.value)" style="width:80px"></td>
-      <td><input type="number" value="${row.endFollowers||0}" onchange="updateFollower(${i},'endFollowers',+this.value)" style="width:80px"></td>
-      <td style="color:${diffColor};font-weight:600;">${diff>=0?'+':''}${diff.toLocaleString()}</td>
-      <td style="color:${diffColor};">${rate !== '-' ? (diff>=0?'▲':'▼')+' '+Math.abs(rate)+'%' : '-'}</td>
-    `;
-    tbody.appendChild(tr);
+// ─── 게시물 추가 / 삭제 ─────────────────────────────────
+function addPost() {
+  const date = document.getElementById('n-date').value;
+  if (!date) { alert('날짜를 입력해주세요.'); return; }
+  posts.push({
+    id:      Date.now(),
+    date,
+    type:    document.getElementById('n-type').value,
+    title:   document.getElementById('n-title').value.trim() || '(제목 없음)',
+    views:   +document.getElementById('n-views').value   || 0,
+    reach:   +document.getElementById('n-reach').value   || 0,
+    likes:   +document.getElementById('n-likes').value   || 0,
+    saves:   +document.getElementById('n-saves').value   || 0,
+    shares:  +document.getElementById('n-shares').value  || 0,
+    profile: +document.getElementById('n-profile').value || 0,
+    link:    +document.getElementById('n-link').value    || 0,
+  });
+  posts.sort((a,b) => b.date.localeCompare(a.date));
+  save();
+  renderAll();
+  ['n-date','n-title','n-views','n-reach','n-likes','n-saves','n-shares','n-profile','n-link']
+    .forEach(id => document.getElementById(id).value = '');
+}
+
+function deletePost(id) {
+  posts = posts.filter(p => p.id !== id);
+  save(); renderAll();
+}
+function clearPosts() {
+  if (!confirm('게시물 데이터를 모두 삭제할까요?')) return;
+  posts = []; save(); renderAll();
+}
+
+// ─── 팔로워 추가 / 삭제 ─────────────────────────────────
+function addFollower() {
+  const date = document.getElementById('f-date').value;
+  if (!date) { alert('날짜를 입력해주세요.'); return; }
+  const s = +document.getElementById('f-start').value || 0;
+  const e = +document.getElementById('f-end').value   || 0;
+  const d = e - s;
+  followers.push({
+    id:   Date.now(),
+    date,
+    week: document.getElementById('f-week').value.trim() || '-',
+    start: s, end: e, diff: d,
+    rate: s > 0 ? (d/s*100).toFixed(2) : '0.00',
+  });
+  followers.sort((a,b) => b.date.localeCompare(a.date));
+  save(); renderFollowers();
+  ['f-date','f-week','f-start','f-end'].forEach(id => document.getElementById(id).value = '');
+}
+function deleteFollower(id) {
+  followers = followers.filter(f => f.id !== id);
+  save(); renderFollowers();
+}
+function clearFollowers() {
+  if (!confirm('팔로워 데이터를 모두 삭제할까요?')) return;
+  followers = []; save(); renderFollowers();
+}
+
+// ─── 요약 지표 ──────────────────────────────────────────
+function renderMetrics() {
+  const total  = posts.length;
+  const views  = posts.reduce((s,p) => s+p.views,  0);
+  const likes  = posts.reduce((s,p) => s+p.likes,  0);
+  const saves  = posts.reduce((s,p) => s+p.saves,  0);
+  const shares = posts.reduce((s,p) => s+p.shares, 0);
+  const eng    = total && views ? ((likes+saves+shares)/views*100).toFixed(1)+'%' : '-';
+  document.getElementById('m-total').textContent  = total;
+  document.getElementById('m-views').textContent  = total ? fmt(views)  : '-';
+  document.getElementById('m-likes').textContent  = total ? fmt(likes)  : '-';
+  document.getElementById('m-eng').textContent    = total ? eng         : '-';
+  document.getElementById('m-saves').textContent  = total ? fmt(saves)  : '-';
+  document.getElementById('m-shares').textContent = total ? fmt(shares) : '-';
+}
+
+// ─── 게시물 테이블 ──────────────────────────────────────
+function renderPostsTable() {
+  const tbody = document.getElementById('posts-tbody');
+  if (!posts.length) {
+    tbody.innerHTML = '<tr><td colspan="11" class="empty">게시물이 없어요. 아래에서 추가하세요!</td></tr>';
+    return;
+  }
+  tbody.innerHTML = posts.map(p => `
+    <tr>
+      <td>${p.date}</td>
+      <td><span class="badge badge-${p.type}">${p.type}</span></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">${p.title}</td>
+      <td>${fmt(p.views)}</td>
+      <td>${fmt(p.reach)}</td>
+      <td>${fmt(p.likes)}</td>
+      <td>${fmt(p.saves)}</td>
+      <td>${fmt(p.shares)}</td>
+      <td>${fmt(p.profile)}</td>
+      <td>${fmt(p.link)}</td>
+      <td><button class="del-btn" onclick="deletePost(${p.id})">✕</button></td>
+    </tr>`).join('');
+}
+
+// ─── 차트 ───────────────────────────────────────────────
+function renderTypeChart() {
+  const counts = {};
+  posts.forEach(p => counts[p.type] = (counts[p.type]||0)+1);
+  const labels = Object.keys(counts);
+  const data   = labels.map(l => counts[l]);
+  const colors = ['#1a56db','#2e7d32','#e65100','#7b1fa2'];
+  if (typeChart) typeChart.destroy();
+  if (!labels.length) return;
+  typeChart = new Chart(document.getElementById('typeChart'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors.slice(0,labels.length), borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { font:{size:12}, boxWidth:10, padding:10 } } }
+    }
   });
 }
 
-function updateFollower(i, key, val) {
-  const sorted = [...followerData].sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
-  const target = followerData.find(r=>r.weekStart===sorted[i].weekStart);
-  if(target) target[key] = val;
-  renderFollowerTable();
-  renderFollowerChart();
-  renderMetrics(); // 상단 팔로워 카드 업데이트
-}
-
-function addFollowerRow() {
-  const weeks = getWeeks();
-  const lastWeek = followerData.length > 0
-    ? [...followerData].sort((a,b)=>b.weekStart.localeCompare(a.weekStart))[0]
-    : null;
-  const newStart = lastWeek ? lastWeek.endFollowers || 0 : 0;
-  // 다음 주 월요일 계산
-  let newDate = new Date();
-  const day = newDate.getDay();
-  const diff = day===0?-6:1-day;
-  newDate.setDate(newDate.getDate()+diff);
-  followerData.push({ weekStart: newDate.toISOString().slice(0,10), startFollowers: newStart, endFollowers: newStart });
-  renderFollowerTable();
-  renderFollowerChart();
-  renderMetrics();
-}
-
-function renderFollowerChart() {
-  const sorted = [...followerData].sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
-  if(followerChart) followerChart.destroy();
-  if(!sorted.length) return;
-  const labels = sorted.map(r=>formatWeekLabel(r.weekStart).replace(/\d{4}년 /,''));
-  const endData = sorted.map(r=>r.endFollowers||0);
-  const diffData = sorted.map(r=>(r.endFollowers||0)-(r.startFollowers||0));
-  followerChart = new Chart(document.getElementById('followerChart'), {
-    type: 'bar',
+function renderViewChart() {
+  const sorted = [...posts].sort((a,b)=>a.date.localeCompare(b.date)).slice(-15);
+  if (viewChart) viewChart.destroy();
+  if (!sorted.length) return;
+  viewChart = new Chart(document.getElementById('viewChart'), {
+    type: 'line',
     data: {
-      labels,
-      datasets: [
-        { type:'line', label:'마감 팔로워', data:endData, borderColor:'#185FA5', backgroundColor:'#185FA522', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#185FA5', yAxisID:'y' },
-        { type:'bar',  label:'주간 증감',   data:diffData, backgroundColor: diffData.map(v=>v>=0?'#1D9E7588':'#D85A3088'), borderRadius:4, yAxisID:'y2' }
-      ]
+      labels: sorted.map(p=>p.date.slice(5)),
+      datasets: [{
+        label:'조회수', data: sorted.map(p=>p.views),
+        borderColor:'#1a56db', backgroundColor:'rgba(26,86,219,0.08)',
+        fill:true, tension:0.4, pointRadius:3, borderWidth:2
+      }]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ position:'top', labels:{ font:{size:11}, boxWidth:10 } } },
-      scales: {
-        x: { grid:{display:false}, ticks:{font:{size:10}} },
-        y: { position:'left', grid:{color:'rgba(128,128,128,0.1)'}, ticks:{font:{size:11}, callback:v=>v>=1000?Math.round(v/1000)+'K':v} },
-        y2: { position:'right', grid:{display:false}, ticks:{font:{size:11}, callback:v=>(v>=0?'+':'')+v} }
+      plugins:{ legend:{display:false} },
+      scales:{ x:{ticks:{font:{size:11}}}, y:{ticks:{font:{size:11}}} }
+    }
+  });
+}
+
+// ─── 주단위 ─────────────────────────────────────────────
+function getWeekRange(offset) {
+  const now  = new Date();
+  const day  = now.getDay();
+  const mon  = new Date(now);
+  mon.setDate(now.getDate() - (day===0?6:day-1) + offset*7);
+  const sun  = new Date(mon);
+  sun.setDate(mon.getDate()+6);
+  return { mon, sun };
+}
+function ds(d) { return d.toISOString().slice(0,10); }
+function prevWeek() { weekOffset--; renderWeekly(); }
+function nextWeek() { weekOffset++; renderWeekly(); }
+
+function renderWeekly() {
+  const { mon, sun } = getWeekRange(weekOffset);
+  document.getElementById('week-lbl').textContent = ds(mon)+' ~ '+ds(sun);
+  const wp = posts.filter(p => p.date >= ds(mon) && p.date <= ds(sun))
+                  .sort((a,b)=>a.date.localeCompare(b.date));
+
+  const tbody = document.getElementById('week-tbody');
+  tbody.innerHTML = wp.length
+    ? wp.map(p=>`<tr>
+        <td>${p.date}</td>
+        <td><span class="badge badge-${p.type}">${p.type}</span></td>
+        <td>${p.title}</td>
+        <td>${fmt(p.views)}</td><td>${fmt(p.likes)}</td>
+        <td>${fmt(p.saves)}</td><td>${fmt(p.shares)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" class="empty">이번 주 게시물이 없어요</td></tr>';
+
+  if (weekChart) weekChart.destroy();
+  if (!wp.length) return;
+  weekChart = new Chart(document.getElementById('weekChart'), {
+    type:'bar',
+    data:{
+      labels: wp.map(p=>p.date.slice(5)+' '+p.type),
+      datasets:[
+        { label:'조회수', data:wp.map(p=>p.views), backgroundColor:'rgba(26,86,219,0.7)', borderRadius:4 },
+        { label:'좋아요', data:wp.map(p=>p.likes), backgroundColor:'rgba(46,125,50,0.7)',  borderRadius:4 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{font:{size:12},boxWidth:10} } },
+      scales:{
+        x:{ ticks:{font:{size:11}, autoSkip:false, maxRotation:40} },
+        y:{ ticks:{font:{size:11}} }
       }
     }
   });
 }
 
-function renderAll(){ renderMetrics(); renderTrendChart(); renderTypeChart(); renderEngageChart(); }
+// ─── 팔로워 ─────────────────────────────────────────────
+function renderFollowers() {
+  const tbody = document.getElementById('follower-tbody');
+  tbody.innerHTML = followers.length
+    ? followers.map(f=>`<tr>
+        <td>${f.date}</td><td>${f.week}</td>
+        <td>${f.start.toLocaleString()}</td>
+        <td>${f.end.toLocaleString()}</td>
+        <td class="${f.diff>=0?'pos':'neg'}">${f.diff>=0?'+':''}${f.diff.toLocaleString()}</td>
+        <td class="${f.diff>=0?'pos':'neg'}">${f.diff>=0?'+':''}${f.rate}%</td>
+        <td><button class="del-btn" onclick="deleteFollower(${f.id})">✕</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" class="empty">팔로워 데이터를 추가해보세요</td></tr>';
 
+  if (followerChart) followerChart.destroy();
+  const sorted = [...followers].sort((a,b)=>a.date.localeCompare(b.date));
+  if (!sorted.length) return;
+  followerChart = new Chart(document.getElementById('followerChart'), {
+    type:'line',
+    data:{
+      labels: sorted.map(f=>f.week||f.date.slice(5)),
+      datasets:[{
+        label:'팔로워', data:sorted.map(f=>f.end),
+        borderColor:'#7b1fa2', backgroundColor:'rgba(123,31,162,0.08)',
+        fill:true, tension:0.4, pointRadius:4, borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{ x:{ticks:{font:{size:11}}}, y:{ticks:{font:{size:11}}} }
+    }
+  });
+}
+
+// ─── CSV 내보내기 ────────────────────────────────────────
 function exportCSV() {
-  const headers=['날짜','유형','콘텐츠 제목','조회수','도달계정','좋아요','저장','공유','프로필방문','외부링크클릭'];
-  const rows=tableData.map(r=>[r.date,r.type,r.title||'',r.views,r.reach,r.likes,r.saves,r.shares,r.profile_visit||0,r.link_click||0].join(','));
-  const csv=[headers.join(','),...rows].join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='instagram_dashboard.csv'; a.click();
+  if (!posts.length) { alert('내보낼 데이터가 없어요.'); return; }
+  const hd = ['날짜','유형','제목','조회수','도달계정','좋아요','저장','공유','프로필방문','링크클릭'];
+  const rows = posts.map(p=>[p.date,p.type,'"'+p.title+'"',p.views,p.reach,p.likes,p.saves,p.shares,p.profile,p.link]);
+  const csv  = [hd,...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'instagram_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
 }
 
-function saveData() {
-  try {
-    localStorage.setItem('ig_tableData', JSON.stringify(tableData));
-    localStorage.setItem('ig_followerData', JSON.stringify(followerData));
-    const el = document.getElementById('save-status');
-    if(el){ el.textContent = '✓ 자동 저장됨'; setTimeout(()=>{ el.textContent=''; }, 2000); }
-  } catch(e) { console.warn('저장 실패:', e); }
+// ─── 전체 렌더 ──────────────────────────────────────────
+function renderAll() {
+  renderMetrics();
+  renderPostsTable();
+  renderTypeChart();
+  renderViewChart();
+  renderWeekly();
 }
 
-function loadData() {
-  try {
-    const t = localStorage.getItem('ig_tableData');
-    const f = localStorage.getItem('ig_followerData');
-    if(t) tableData = JSON.parse(t);
-    if(f) followerData = JSON.parse(f);
-  } catch(e) { console.warn('불러오기 실패:', e); }
-}
-
-// 데이터 변경 시 자동 저장
-const _updateCell = updateCell;
-updateCell = function(i, key, val) { _updateCell(i, key, val); saveData(); };
-
-const _updateFollower = updateFollower;
-updateFollower = function(i, key, val) { _updateFollower(i, key, val); saveData(); };
-
-const _addRow = addRow;
-addRow = function() { _addRow(); saveData(); };
-
-const _addFollowerRow = addFollowerRow;
-addFollowerRow = function() { _addFollowerRow(); saveData(); };
-
-// 초기화 버튼
-function resetData() {
-  if(!confirm('저장된 모든 데이터를 초기화할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
-  localStorage.removeItem('ig_tableData');
-  localStorage.removeItem('ig_followerData');
-  location.reload();
-}
-
-loadData();
-renderAll();
-renderTable();
-renderFollowerTable();
-renderFollowerChart();
+// ─── 초기화 ─────────────────────────────────────────────
+document.getElementById('n-date').value = new Date().toISOString().slice(0,10);
+document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+load();
 </script>
 </body>
 </html>
