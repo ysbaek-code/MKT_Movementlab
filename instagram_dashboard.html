@@ -617,8 +617,48 @@ function renderCharts(){
   }
 }
 
+// ── Seed Data (PDF: movementlab_ig_2026-05-18) ────────────────────────────
+const SEED_POSTS = [
+  {id:'s01',date:'2026-04-28',type:'Stay',           title:'훌쩍 떠나고픈 이번 주말. 쉬어가는 무브먼트 스테이 4',                views:20593,reach:10626,likes:42, saves:66, shares:29, profile:57, link:24},
+  {id:'s02',date:'2026-04-29',type:'Archive',        title:'제주의 자연 속에서 취향을 마주하며 앉는다는 것',                    views:12189,reach:4795, likes:31, saves:8,  shares:0,  profile:0,  link:0},
+  {id:'s03',date:'2026-04-29',type:'세컨드마켓',     title:'매직볼트 베스트셀러, 세컨드마켓 리퍼브세일 오픈',                   views:28024,reach:13036,likes:34, saves:58, shares:41, profile:96, link:287},
+  {id:'s04',date:'2026-04-30',type:'세컨드마켓',     title:'4월 5주차 온라인 세컨드마켓 NEW IN',                               views:15494,reach:6630, likes:20, saves:13, shares:7,  profile:36, link:17},
+  {id:'s05',date:'2026-04-30',type:'Club Movement',  title:'비건 발효 음식, 차와 와인 모두 즐길 수 있는 퍼멘츠 한남 오픈',     views:29658,reach:10917,likes:248,saves:112,shares:88, profile:49, link:1},
+  {id:'s06',date:'2026-05-01',type:'Club Movement Home',title:'오사카 헤어디자이너의 집에는 어떤 가구가 있을까?',              views:22601,reach:11298,likes:72, saves:70, shares:6,  profile:51, link:8},
+  {id:'s07',date:'2026-05-02',type:'Curation',       title:'큐브를 조립하듯 자유롭게, 파사드 쉘프 모듈 가이드',               views:14251,reach:6280, likes:17, saves:21, shares:3,  profile:21, link:7},
+  {id:'s08',date:'2026-05-03',type:'Curation',       title:'May for Me! 나에게 선물하는 자리 하나',                           views:17775,reach:7675, likes:42, saves:64, shares:20, profile:34, link:6},
+  {id:'s09',date:'2026-05-04',type:'공간 및 라이프스타일',title:'올리브영이 vip에게만 보여주는 공간',                         views:30154,reach:14034,likes:55, saves:37, shares:14, profile:0,  link:0},
+  {id:'s10',date:'2026-05-05',type:'제품 큐레이션',  title:'플레어 글로스 테이블',                                            views:19094,reach:9262, likes:36, saves:81, shares:14, profile:42, link:15},
+  {id:'s11',date:'2026-05-06',type:'프로모션',       title:'2026 개러지세일',                                                 views:50170,reach:19293,likes:143,saves:214,shares:420,profile:396,link:215},
+  {id:'s12',date:'2026-05-06',type:'프로모션',       title:'출격 예정 리스트',                                                views:75030,reach:33106,likes:157,saves:244,shares:325,profile:1293,link:1217},
+  {id:'s13',date:'2026-05-07',type:'프로모션',       title:'2026 세컨드마켓 개러지 세일 Q&A',                                 views:27081,reach:7864, likes:36, saves:38, shares:74, profile:211,link:39},
+  {id:'s14',date:'2026-05-08',type:'프로모션',       title:'2026 개러지세일 현장 프리뷰 영상 공개',                           views:46816,reach:18703,likes:131,saves:113,shares:270,profile:889,link:218},
+  {id:'s15',date:'2026-05-09',type:'프로모션',       title:'2026 개러지세일 종료 아카이빙',                                   views:26781,reach:12253,likes:102,saves:102,shares:10, profile:173,link:15},
+  {id:'s16',date:'2026-05-10',type:'공간 및 라이프스타일',title:'mmca로 머리하러 오세요! <아이들의 헤어컷>',                  views:28606,reach:14273,likes:38, saves:38, shares:8,  profile:35, link:1},
+  {id:'s17',date:'2026-05-10',type:'공간 및 라이프스타일',title:'가졸들과 마지막 외식 언제예요?',                             views:37674,reach:16854,likes:73, saves:73, shares:21, profile:21, link:60},
+  {id:'s18',date:'2026-05-11',type:'Club Movement Home',title:'콤비레더 소파로 기록하는 균형감 있는 공간',                    views:20202,reach:9600, likes:114,saves:120,shares:150,profile:76, link:15},
+  {id:'s19',date:'2026-05-12',type:'Curation',       title:'오티움 데이베드',                                                 views:23251,reach:11202,likes:58, saves:57, shares:16, profile:55, link:14},
+  {id:'s20',date:'2026-05-13',type:'기타',           title:'The makers WGNB 백종환 소장 인터뷰',                              views:33888,reach:15000,likes:435,saves:134,shares:18, profile:60, link:4},
+  {id:'s21',date:'2026-05-14',type:'Curation',       title:'패브릭 소파 고르는 기준',                                         views:14626,reach:6300, likes:41, saves:36, shares:7,  profile:23, link:3},
+  {id:'s22',date:'2026-05-14',type:'Club Movement',  title:'TLL 온라인 새로운 양조장',                                        views:13818,reach:6457, likes:35, saves:12, shares:5,  profile:12, link:1},
+  {id:'s23',date:'2026-05-15',type:'기타',           title:'Review 밀란 디자인 위크 마르셋',                                  views:17212,reach:8947, likes:27, saves:9,  shares:2,  profile:13, link:0},
+  {id:'s24',date:'2026-05-16',type:'기타',           title:'Making Story 진짜 프리미엄의 차이',                               views:21235,reach:9732, likes:34, saves:11, shares:3,  profile:36, link:4},
+  {id:'s25',date:'2026-05-17',type:'기타',           title:"Director's note 무니토 모아레 쉘프",                              views:19924,reach:8850, likes:62, saves:55, shares:9,  profile:41, link:13},
+];
+
 // ── Init ──────────────────────────────────────────────────────────────────
-loadData();
+async function init(){
+  await loadData();
+  // 저장소가 비어있으면 PDF 시드 데이터 자동 입력
+  if (posts.length === 0) {
+    posts = SEED_POSTS.map(p => ({...p, id: p.id, views: String(p.views), reach: String(p.reach),
+      likes: String(p.likes), saves: String(p.saves), shares: String(p.shares),
+      profile: String(p.profile), link: String(p.link)}));
+    await saveData();
+    renderAll();
+  }
+}
+init();
 </script>
 </body>
 </html>
