@@ -329,13 +329,20 @@ setInterval(async () => {
 }, 30000);
 
 // ── Helpers ───────────────────────────────────────────────────────────────
+function parseLocalDate(str){
+  const [y,m,d] = str.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
 function getMonday(d){
-  const dt = new Date(d);
+  const dt = d instanceof Date ? new Date(d) : parseLocalDate(d);
   const day = dt.getDay();
   const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
   dt.setDate(diff); dt.setHours(0,0,0,0); return dt;
 }
-function fmtDate(d){ return new Date(d).toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'}); }
+function fmtDate(d){
+  const dt = d instanceof Date ? d : parseLocalDate(d);
+  return dt.toLocaleDateString('ko-KR',{month:'2-digit',day:'2-digit'});
+}
 function fmtNum(n){ return Number(n||0).toLocaleString(); }
 function num(s){ return parseFloat(s) || 0; }
 
@@ -448,11 +455,17 @@ function changeWeek(dir){
   renderWeekly();
 }
 
+function toLocalDateStr(dt){
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const d = String(dt.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
 function renderWeekly(){
   const start = new Date(currentWeekStart);
-  const end = new Date(start.getTime() + 6 * 86400000);
-  const startStr = start.toISOString().slice(0,10);
-  const endStr = end.toISOString().slice(0,10);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  const startStr = toLocalDateStr(start);
+  const endStr = toLocalDateStr(end);
   document.getElementById('weekLabel').textContent = `${fmtDate(start)} ~ ${fmtDate(end)}`;
 
   const wp = posts.filter(p => p.date >= startStr && p.date <= endStr).sort((a,b) => a.date.localeCompare(b.date));
