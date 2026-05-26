@@ -22,30 +22,25 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
 .app { max-width: 1120px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-/* Header */
 .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
 .app-header h1 { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 
-/* Tabs */
 .page-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
 .page-tab { font-size: 13px; padding: 9px 18px; border: none; background: none; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: color .15s; }
 .page-tab.active { color: var(--text); border-bottom-color: var(--text); }
 .page-tab:hover { color: var(--text); }
 
-/* Metrics */
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
 .metric-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); padding: 1rem 1.125rem; }
 .metric-card .lbl { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
 .metric-card .val { font-size: 22px; font-weight: 600; }
 .metric-card .sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
-/* Filters */
 .filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
 .filters select { font-size: 13px; padding: 5px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); height: 32px; cursor: pointer; }
 .btn-add { margin-left: auto; font-size: 13px; padding: 5px 14px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; height: 32px; display: flex; align-items: center; gap: 5px; }
 .btn-add:hover { opacity: .85; }
 
-/* Table */
 .table-wrap { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th { font-size: 11px; font-weight: 500; color: var(--text2); padding: 10px 12px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; background: var(--bg3); }
@@ -54,41 +49,36 @@ tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: var(--bg); }
 .td-truncate { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Brand badge */
 .brand-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
-.b-jackson { background: #fff0e6; color: #c05a00; }
-.b-munito  { background: #e8f0ff; color: #2547a8; }
+.b-jackson  { background: #fff0e6; color: #c05a00; }
+.b-munito   { background: #e8f0ff; color: #2547a8; }
 .b-byheyday { background: #eafaf1; color: #1a7a41; }
-.b-oblique { background: #f5e6ff; color: #7a22a8; }
-.b-txtr    { background: #fff8e6; color: #a87e00; }
-.b-magic   { background: #ffe6e6; color: #a82222; }
-.b-mbis    { background: #e6f5ff; color: #1a6ea8; }
+.b-oblique  { background: #f5e6ff; color: #7a22a8; }
+.b-txtr     { background: #fff8e6; color: #a87e00; }
+.b-magic    { background: #ffe6e6; color: #a82222; }
+.b-mbis     { background: #e6f5ff; color: #1a6ea8; }
+.b-marset   { background: #e6fff8; color: #0d7a5f; }
 
-/* Channel badge */
 .ch-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
-.ch-insta  { background: #fce4ec; color: #c2185b; }
+.ch-insta   { background: #fce4ec; color: #c2185b; }
 .ch-youtube { background: #ffebee; color: #c62828; }
 
-/* Status badge */
 .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
 .s-active { background: #e8f5e9; color: #2e7d32; }
 .s-plan   { background: #e3f2fd; color: #1565c0; }
 .s-done   { background: #f5f5f5; color: #616161; }
 
-/* Action btns */
-.btn-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; }
-.btn-del:hover { color: #c0392b; background: #fdecea; }
+.btn-del  { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; }
+.btn-del:hover  { color: #c0392b; background: #fdecea; }
 .btn-edit { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; margin-right: 2px; }
 .btn-edit:hover { color: #1a6ea8; background: #e6f5ff; }
 
-/* Pagination */
 .pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; font-size: 12px; color: var(--text2); }
 .page-btns { display: flex; gap: 3px; }
 .page-btn { font-size: 12px; padding: 4px 9px; border: 0.5px solid var(--border); border-radius: 5px; background: var(--bg2); color: var(--text2); cursor: pointer; }
 .page-btn.active { background: var(--bg); color: var(--text); font-weight: 500; }
 .page-btn:hover { background: var(--bg); }
 
-/* Modal */
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; align-items: center; justify-content: center; }
 .modal.open { display: flex; }
 .modal-box { background: var(--bg2); border-radius: var(--r2); padding: 1.5rem; width: 480px; max-width: 95vw; box-shadow: 0 8px 40px rgba(0,0,0,.15); }
@@ -101,11 +91,10 @@ tbody tr:hover { background: var(--bg); }
 .form-group textarea { resize: vertical; min-height: 60px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
 .btn-cancel { font-size: 13px; padding: 7px 16px; border: 0.5px solid var(--border); border-radius: var(--r); background: none; color: var(--text); cursor: pointer; }
-.btn-save { font-size: 13px; padding: 7px 16px; border: none; border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; }
+.btn-save   { font-size: 13px; padding: 7px 16px; border: none; border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; }
 .btn-cancel:hover { background: var(--bg); }
-.btn-save:hover { opacity: .85; }
+.btn-save:hover   { opacity: .85; }
 
-/* Monthly view */
 .month-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
 .month-nav button { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); width: 32px; height: 32px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--text); }
 .month-nav button:hover { background: var(--bg); }
@@ -118,37 +107,15 @@ tbody tr:hover { background: var(--bg); }
 .item-card .item-price { font-weight: 600; color: var(--text); }
 .empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); }
 
-/* Brand cost breakdown */
 .brand-cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
-.brand-cost-card {
-  background: var(--bg2);
-  border: 0.5px solid var(--border);
-  border-radius: var(--r);
-  padding: .75rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
+.brand-cost-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); padding: .75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .brand-cost-card .brand-cost-left { display: flex; align-items: center; gap: 8px; }
 .brand-cost-card .brand-cost-count { font-size: 11px; color: var(--text3); }
 .brand-cost-card .brand-cost-amount { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
-.brand-cost-card .brand-cost-bar-wrap {
-  width: 100%;
-  height: 3px;
-  background: var(--bg3);
-  border-radius: 99px;
-  margin-top: 6px;
-  overflow: hidden;
-}
-.brand-cost-card .brand-cost-bar {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.4s ease;
-}
+.brand-cost-card .brand-cost-bar-wrap { width: 100%; height: 3px; background: var(--bg3); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+.brand-cost-card .brand-cost-bar { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
 .brand-cost-card-inner { flex: 1; min-width: 0; }
 
-/* Chart view */
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
 .chart-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
 .chart-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: var(--text2); }
@@ -177,6 +144,7 @@ tbody tr:hover { background: var(--bg); }
         <option value="">전체 브랜드</option>
         <option>잭슨카멜레온</option><option>무니토</option><option>바이헤이데이</option>
         <option>오블리크테이블</option><option>TXTR</option><option>매직볼트</option><option>MBIS</option>
+        <option>marset</option>
       </select>
       <select id="f-channel"><option value="">전체 채널</option><option>인스타</option><option>유튜브</option></select>
       <select id="f-status"><option value="">전체 상태</option><option>진행중</option><option>예정</option><option>완료</option></select>
@@ -204,11 +172,8 @@ tbody tr:hover { background: var(--bg); }
       <button onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
     </div>
     <div class="metrics-row3" id="month-metrics"></div>
-
-    <!-- 브랜드별 협찬 비용 (신규) -->
     <div class="section-title">브랜드별 협찬 비용</div>
     <div class="brand-cost-grid" id="brand-cost-grid"></div>
-
     <div class="section-title">이번 달 계약</div>
     <div class="item-list" id="list-contract"></div>
     <div class="section-title">이번 달 노출</div>
@@ -240,6 +205,7 @@ tbody tr:hover { background: var(--bg); }
         <select id="m-brand">
           <option>잭슨카멜레온</option><option>무니토</option><option>바이헤이데이</option>
           <option>오블리크테이블</option><option>TXTR</option><option>매직볼트</option><option>MBIS</option>
+          <option>marset</option>
         </select>
       </div>
       <div class="form-group"><label>채널</label>
@@ -284,9 +250,12 @@ tbody tr:hover { background: var(--bg); }
 </div>
 
 <script>
-const BRANDS = ['잭슨카멜레온','무니토','바이헤이데이','오블리크테이블','TXTR','매직볼트','MBIS'];
-const BRAND_CLS = { '잭슨카멜레온':'b-jackson','무니토':'b-munito','바이헤이데이':'b-byheyday','오블리크테이블':'b-oblique','TXTR':'b-txtr','매직볼트':'b-magic','MBIS':'b-mbis' };
-const BRAND_COLORS = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308','#ef4444','#06b6d4'];
+const BRANDS = ['잭슨카멜레온','무니토','바이헤이데이','오블리크테이블','TXTR','매직볼트','MBIS','marset'];
+const BRAND_CLS = {
+  '잭슨카멜레온':'b-jackson','무니토':'b-munito','바이헤이데이':'b-byheyday',
+  '오블리크테이블':'b-oblique','TXTR':'b-txtr','매직볼트':'b-magic','MBIS':'b-mbis','marset':'b-marset'
+};
+const BRAND_COLORS = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308','#ef4444','#06b6d4','#10b981'];
 const PAGE_SIZE = 10;
 
 let data = [{"no":1,"brand":"TXTR","channel":"유튜브","acct":"_sihosiho","product":"로에 램프, X 모듈","option":"블랙 / X5, 가우디 52","contract":"2026-04-21","end":"2026-04-21","expose":"","price":1800000,"status":"진행중","note":""},{"no":2,"brand":"매직볼트","channel":"인스타","acct":"hyunz00","product":"클립테이블, 페그 체어","option":"블랙 2100 / 블랙 2개","contract":"2026-04-21","end":"2026-10-21","expose":"","price":2544000,"status":"진행중","note":"APR 에이전시"},{"no":3,"brand":"TXTR","channel":"인스타","acct":"color","product":"facade shelf","option":"이지터치 블랙, 1500, 4단","contract":"2026-04-30","end":"2026-10-30","expose":"","price":1850000,"status":"진행중","note":"APR 에이전시"},{"no":4,"brand":"매직볼트","channel":"유튜브","acct":"aneunhyeon__","product":"플랭크 테이블, 페그체어, 스쿨체어, 스팟체어","option":"플랭크 1500, 페그 - 블랙, 오크, 스쿨 -블랙, 스팟-오크","contract":"2026-04-30","end":"2026-10-30","expose":"","price":2227000,"status":"진행중","note":"APR 에이전시"},{"no":5,"brand":"MBIS","channel":"인스타","acct":"reum_pu","product":"마르셋 - 감보사","option":"M, 오팔 & 오렌지","contract":"2026-05-07","end":"2026-10-07","expose":"","price":920000,"status":"진행중","note":"APR 에이전시"},{"no":6,"brand":"바이헤이데이","channel":"인스타","acct":"_doit","product":"필로티 소파 테이블","option":"라이트","contract":"2026-04-07","end":"2026-10-07","expose":"","price":1100000,"status":"진행중","note":"자체 진행"},{"no":7,"brand":"무니토","channel":"유튜브","acct":"xodambi","product":"블랭크 데이베드","option":"레더 / Austen Ocher","contract":"2026-03-01","end":"2026-08-01","expose":"","price":3740000,"status":"진행중","note":"자체 진행"},{"no":8,"brand":"TXTR","channel":"유튜브","acct":"xodambi","product":"SDC 01","option":"camel / stainless","contract":"2026-03-01","end":"2026-08-01","expose":"","price":490000,"status":"진행중","note":"연예인 손담비 자체 진행"},{"no":9,"brand":"TXTR","channel":"인스타","acct":"@dahyunjae","product":"로에램프","option":"블랙","contract":"2026-04-30","end":"2026-10-30","expose":"","price":650000,"status":"진행중","note":"자체 진행"},{"no":10,"brand":"TXTR","channel":"유튜브","acct":"heeheedaek","product":"CH8 / ROHE LAMP","option":"beech / black","contract":"2026-04-30","end":"2026-10-30","expose":"2026-05-01","price":1430000,"status":"진행중","note":"자체 진행 \n1. 브랜디드 유튜브 영상(1편)- 완료 \n2. 룸투어 영상(1편) \n3. 집꾸미기 영상(조명 체어"}];
@@ -296,7 +265,6 @@ let curMonth = new Date();
 curMonth.setDate(1);
 let charts = {};
 
-// LocalStorage
 function save() { try { localStorage.setItem('spons_data', JSON.stringify(data)); localStorage.setItem('spons_no', nextNo); } catch(e){} }
 function load() { try { const d = localStorage.getItem('spons_data'); const n = localStorage.getItem('spons_no'); if(d) data = JSON.parse(d); if(n) nextNo = +n; } catch(e){} }
 load();
@@ -358,7 +326,6 @@ function renderTable() {
       </td>
     </tr>`).join('');
   }
-  // Pagination
   const pages = Math.ceil(total/PAGE_SIZE)||1;
   let btns = '';
   for(let i=1;i<=pages;i++) btns+=`<button class="page-btn${i===page?' active':''}" data-p="${i}">${i}</button>`;
@@ -437,13 +404,10 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   renderTable();
 });
 
-// Monthly
 function changeMonth(dir) { curMonth.setMonth(curMonth.getMonth()+dir); renderMonthly(); }
 
 function renderBrandCostGrid(contracts) {
   const grid = document.getElementById('brand-cost-grid');
-
-  // 브랜드별 비용 집계
   const brandTotals = BRANDS.map((b, bi) => {
     const rows = contracts.filter(r => r.brand === b);
     const total = rows.reduce((a, r) => a + Number(r.price || 0), 0);
@@ -456,8 +420,6 @@ function renderBrandCostGrid(contracts) {
   }
 
   const maxTotal = Math.max(...brandTotals.map(b => b.total), 1);
-
-  // 비용 높은 순으로 정렬
   brandTotals.sort((a, b) => b.total - a.total);
 
   grid.innerHTML = brandTotals.map(b => `
@@ -491,7 +453,6 @@ function renderMonthly() {
     {lbl:'이달 협찬 비용', val:totalCost.toLocaleString('ko-KR')+'원'},
   ].map(m=>`<div class="metric-card"><div class="lbl">${m.lbl}</div><div class="val">${m.val}</div></div>`).join('');
 
-  // 브랜드별 협찬 비용 렌더링 (신규)
   renderBrandCostGrid(contracts);
 
   const renderList = (items, containerId) => {
@@ -506,7 +467,6 @@ function renderMonthly() {
   renderList(exposes,'list-expose');
 }
 
-// Chart
 function renderCharts() {
   const y = parseInt(document.getElementById('year-select').value);
   const months = Array.from({length:12},(_,i)=>i);
@@ -514,7 +474,6 @@ function renderCharts() {
 
   const destroy = id => { if(charts[id]) { charts[id].destroy(); delete charts[id]; } };
 
-  // Monthly cost by brand (stacked bar)
   destroy('mc');
   const mc = document.getElementById('chart-monthly-cost').getContext('2d');
   const brandDatasets = BRANDS.map((b,bi)=>({
@@ -528,17 +487,14 @@ function renderCharts() {
   }));
   charts['mc'] = new Chart(mc,{type:'bar',data:{labels:monthLabels,datasets:brandDatasets},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>v?v.toLocaleString():'0'}}},plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,font:{size:10}}}}}});
 
-  // Monthly count
   destroy('mct');
   const mct = document.getElementById('chart-monthly-count').getContext('2d');
   charts['mct'] = new Chart(mct,{type:'bar',data:{labels:monthLabels,datasets:[{label:'계약 건수',data:months.map(m=>data.filter(r=>r.contract&&new Date(r.contract).getFullYear()===y&&new Date(r.contract).getMonth()===m).length),backgroundColor:'#3b82f688',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
 
-  // Brand total cost (horizontal bar)
   destroy('bc');
   const bc = document.getElementById('chart-brand-cost').getContext('2d');
   charts['bc'] = new Chart(bc,{type:'bar',data:{labels:BRANDS,datasets:[{label:'협찬 비용',data:BRANDS.map(b=>data.filter(r=>r.brand===b&&(!y||!r.contract||(new Date(r.contract).getFullYear()===y))).reduce((a,r)=>a+Number(r.price||0),0)),backgroundColor:BRAND_COLORS.map(c=>c+'bb'),borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v?v.toLocaleString():'0'}}}}});
 
-  // Channel pie
   destroy('ch');
   const ch = document.getElementById('chart-channel').getContext('2d');
   const insta = data.filter(r=>r.channel==='인스타').length;
