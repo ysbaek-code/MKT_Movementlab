@@ -1,39 +1,325 @@
-# 비용 요약
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프로젝트 비용 관리 대시보드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f4f0; --bg2: #ffffff; --bg3: #f0ede8;
+  --text: #1a1a18; --text2: #72716b; --text3: #a09e98;
+  --border: rgba(0,0,0,0.11); --r: 8px; --r2: 12px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+.app { max-width: 1120px; margin: 0 auto; padding: 2rem 1.5rem; }
+.app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.app-header h1 { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.app-header .src-note { font-size: 11px; color: var(--text3); }
+.page-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+.page-tab { font-size: 13px; padding: 9px 18px; border: none; background: none; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: color .15s; }
+.page-tab.active { color: var(--text); border-bottom-color: var(--text); }
+.page-tab:hover { color: var(--text); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.metric-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); padding: 1rem 1.125rem; }
+.metric-card .lbl { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.metric-card .val { font-size: 22px; font-weight: 600; }
+.metric-card .sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+.filters select { font-size: 13px; padding: 5px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); height: 32px; cursor: pointer; }
+.btn-reload { margin-left: auto; font-size: 13px; padding: 5px 14px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; height: 32px; display: flex; align-items: center; gap: 5px; }
+.btn-reload:hover { opacity: .85; }
+.table-wrap { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); overflow-x: auto; margin-bottom: 1.25rem; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { font-size: 11px; font-weight: 500; color: var(--text2); padding: 10px 12px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; background: var(--bg3); }
+tbody td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--bg); }
+tfoot td { padding: 10px 12px; font-weight: 600; background: var(--bg3); border-top: 1px solid var(--border); }
+.td-truncate { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--bg3); color: var(--text2); }
+.status-badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.s-진행중 { background: #e8f5e9; color: #2e7d32; }
+.s-예정   { background: #e3f2fd; color: #1565c0; }
+.s-완료   { background: #f5f5f5; color: #616161; }
+.section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 1.25rem 0 .75rem; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+.chart-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
+.chart-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: var(--text2); }
+.chart-card canvas { max-height: 240px; }
+.empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); }
+.warn-box { background: #fff8e6; border: 0.5px solid #f0d98a; color: #8a6d00; border-radius: var(--r); padding: .75rem 1rem; font-size: 12.5px; margin-bottom: 1rem; }
+.warn-box div + div { margin-top: 4px; }
+.load-msg { text-align: center; padding: 3rem; color: var(--text3); }
+.na { color: var(--text3); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="app-header">
+    <h1><i class="ti ti-report-money" style="font-size:18px"></i> 프로젝트 비용 관리 대시보드</h1>
+    <span class="src-note" id="src-note">데이터 불러오는 중...</span>
+  </div>
+  <div class="page-tabs">
+    <button class="page-tab active" onclick="showPage('summary')">요약</button>
+    <button class="page-tab" onclick="showPage('matrix')">프로젝트x카테고리 교차표</button>
+    <button class="page-tab" onclick="showPage('raw')">전체 비용 내역</button>
+  </div>
 
-(projects.csv / categories.csv / costs.csv 로부터 자동 생성 — 수정 후 `python3 summarize.py` 재실행)
+  <div id="load-msg" class="load-msg">CSV 데이터를 불러오는 중입니다...</div>
 
-## 프로젝트별 비용 카테고리 정의
+  <div id="content" style="display:none">
+    <div id="warn-area"></div>
 
-(categories.csv 를 편집하면 여기가 바뀝니다)
+    <!-- SUMMARY -->
+    <div id="page-summary">
+      <div class="metrics" id="metrics"></div>
+      <div class="chart-grid">
+        <div class="chart-card"><h3>프로젝트별 집행액</h3><canvas id="chart-project"></canvas></div>
+        <div class="chart-card"><h3>카테고리별 집행액 (통합)</h3><canvas id="chart-category"></canvas></div>
+      </div>
+      <div class="section-title">프로젝트별 집행액</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>프로젝트</th><th>총예산</th><th class="num">집행액</th><th>집행률</th><th>상태</th><th>정의된 카테고리</th></tr></thead>
+          <tbody id="tbody-project"></tbody>
+        </table>
+      </div>
+      <div class="section-title">카테고리별 집행액 (전체 통합)</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>카테고리</th><th class="num">금액</th><th>비중</th></tr></thead>
+          <tbody id="tbody-category"></tbody>
+        </table>
+      </div>
+    </div>
 
-| 프로젝트 | 정의된 카테고리 |
-|---|---|
-| 큐레이터·앰버서더 1기 | 협찬, 기프트, 부대비용 |
-| 콜드프레임 x 오블리크테이블 | 택배발송비, 부대비용 |
+    <!-- MATRIX -->
+    <div id="page-matrix" style="display:none">
+      <div class="section-title">프로젝트 x 카테고리 교차표 ("-" = 해당 프로젝트에 정의되지 않은 카테고리)</div>
+      <div class="table-wrap">
+        <table id="matrix-table"></table>
+      </div>
+    </div>
 
-## 프로젝트별 집행액
+    <!-- RAW -->
+    <div id="page-raw" style="display:none">
+      <div class="filters">
+        <select id="f-project"><option value="">전체 프로젝트</option></select>
+        <select id="f-category"><option value="">전체 카테고리</option></select>
+        <button class="btn-reload" id="reloadBtn"><i class="ti ti-refresh"></i> 새로고침</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>프로젝트</th><th>카테고리</th><th>항목</th><th class="num">금액</th><th>날짜</th><th>상태</th><th>비고</th></tr></thead>
+          <tbody id="tbody-raw"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
-| 프로젝트 | 총예산 | 집행액 | 집행률 | 상태 |
-|---|---|---|---|---|
-| 큐레이터·앰버서더 1기 | - | 2,270,000원 | - | 진행중 |
-| 콜드프레임 x 오블리크테이블 | - | 105,000원 | - | 진행중 |
-| **합계** | | **2,375,000원** | | |
+<script>
+let projects = [], categories = [], costs = [];
+let charts = {};
 
-## 카테고리별 집행액 (전체 프로젝트 통합)
+function fmt(n) { return (n||0).toLocaleString('ko-KR') + '원'; }
+function toNum(v) { const n = parseFloat(String(v||'').replace(/,/g,'').trim()); return isNaN(n) ? 0 : n; }
 
-| 카테고리 | 금액 | 비중 |
-|---|---|---|
-| 협찬 | 1,850,000원 | 77.9% |
-| 기프트 | 300,000원 | 12.6% |
-| 부대비용 | 180,000원 | 7.6% |
-| 택배발송비 | 45,000원 | 1.9% |
+async function fetchCsv(name) {
+  const res = await fetch(name, { cache: 'no-store' });
+  if (!res.ok) throw new Error(name + ' 로드 실패 (' + res.status + ')');
+  const text = await res.text();
+  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+  return parsed.data;
+}
 
-## 프로젝트 x 카테고리 교차표
+async function loadAll() {
+  try {
+    [projects, categories, costs] = await Promise.all([
+      fetchCsv('projects.csv'),
+      fetchCsv('categories.csv'),
+      fetchCsv('costs.csv'),
+    ]);
+    document.getElementById('src-note').textContent = 'projects.csv / categories.csv / costs.csv 기준 (같은 저장소 파일을 직접 불러옴)';
+    render();
+    document.getElementById('load-msg').style.display = 'none';
+    document.getElementById('content').style.display = '';
+  } catch (e) {
+    document.getElementById('load-msg').innerHTML =
+      '<div class="empty">CSV를 불러오지 못했습니다.<br>이 페이지는 GitHub Pages 등 실제 웹 서버에서 열어야 같은 폴더의 projects.csv / categories.csv / costs.csv를 불러올 수 있습니다.<br>(파일을 더블클릭해서 file:// 로 열면 브라우저 보안 정책 때문에 CSV를 못 읽습니다)<br><br><span style="color:#c0392b">' + e.message + '</span></div>';
+  }
+}
 
-("-" = 해당 프로젝트에 정의되지 않은 카테고리)
+function render() {
+  const projOrder = projects.map(p => (p['프로젝트명']||'').trim()).filter(Boolean);
+  const projBudget = {}, statusMap = {};
+  projects.forEach(p => {
+    const name = (p['프로젝트명']||'').trim();
+    projBudget[name] = toNum(p['총예산']);
+    statusMap[name] = (p['상태']||'').trim();
+  });
 
-| 프로젝트 | 협찬 | 기프트 | 부대비용 | 택배발송비 | 합계 |
-|---|---|---|---|---|---|
-| 큐레이터·앰버서더 1기 | 1,850,000원 | 300,000원 | 120,000원 | - | 2,270,000원 |
-| 콜드프레임 x 오블리크테이블 | - | - | 60,000원 | 45,000원 | 105,000원 |
-| **카테고리 합계** | 1,850,000원 | 300,000원 | 180,000원 | 45,000원 | 2,375,000원 |
+  // 프로젝트별 정의된 카테고리 (순서 보존)
+  const projCategories = {};
+  const catOrder = [];
+  categories.forEach(row => {
+    const proj = (row['프로젝트명']||'').trim();
+    const cat = (row['카테고리']||'').trim();
+    if (!proj || !cat) return;
+    if (!projCategories[proj]) projCategories[proj] = [];
+    if (!projCategories[proj].includes(cat)) projCategories[proj].push(cat);
+    if (!catOrder.includes(cat)) catOrder.push(cat);
+  });
+
+  const matrix = {}; // matrix[proj][cat] = sum
+  const projTotal = {}, catTotal = {};
+  const unknownProjects = [];
+  const undefinedCatIssues = [];
+
+  costs.forEach(c => {
+    const proj = (c['프로젝트명']||'').trim();
+    const cat = (c['카테고리']||'').trim();
+    const amt = toNum(c['금액']);
+    if (!proj || !cat) return;
+    matrix[proj] = matrix[proj] || {};
+    matrix[proj][cat] = (matrix[proj][cat]||0) + amt;
+    projTotal[proj] = (projTotal[proj]||0) + amt;
+    catTotal[cat] = (catTotal[cat]||0) + amt;
+    if (!catOrder.includes(cat)) catOrder.push(cat);
+    if (!projOrder.includes(proj) && !unknownProjects.includes(proj)) unknownProjects.push(proj);
+    if (projCategories[proj] && !projCategories[proj].includes(cat)) {
+      const key = proj + '→' + cat;
+      if (!undefinedCatIssues.includes(key)) undefinedCatIssues.push(key);
+    }
+  });
+
+  const allProjects = projOrder.concat(unknownProjects);
+  const grandTotal = Object.values(projTotal).reduce((a,b)=>a+b, 0);
+
+  // warnings
+  const warnArea = document.getElementById('warn-area');
+  let warnHtml = '';
+  if (unknownProjects.length) {
+    warnHtml += '<div>⚠️ projects.csv에 없는 프로젝트명이 costs.csv에서 발견됨: ' + unknownProjects.join(', ') + '</div>';
+  }
+  if (undefinedCatIssues.length) {
+    warnHtml += '<div>⚠️ categories.csv에 정의되지 않은 카테고리 사용: ' + undefinedCatIssues.join(', ') + '</div>';
+  }
+  warnArea.innerHTML = warnHtml ? '<div class="warn-box">' + warnHtml + '</div>' : '';
+
+  // metrics
+  document.getElementById('metrics').innerHTML = [
+    {lbl:'총 집행액', val: fmt(grandTotal), sub: allProjects.length + '개 프로젝트'},
+    {lbl:'프로젝트 수', val: allProjects.length + '개', sub: '진행중 ' + allProjects.filter(p=>statusMap[p]==='진행중').length + '개'},
+    {lbl:'카테고리 수', val: catOrder.length + '개', sub: '전체 프로젝트 통합'},
+    {lbl:'비용 기록 건수', val: costs.length + '건', sub: 'costs.csv 행 수'},
+  ].map(m=>`<div class="metric-card"><div class="lbl">${m.lbl}</div><div class="val">${m.val}</div><div class="sub">${m.sub}</div></div>`).join('');
+
+  // 프로젝트 표
+  document.getElementById('tbody-project').innerHTML = allProjects.map(proj => {
+    const budget = projBudget[proj] || 0;
+    const spent = projTotal[proj] || 0;
+    const rate = budget ? ((spent/budget*100).toFixed(1) + '%') : '-';
+    const status = statusMap[proj] || '';
+    const cats = (projCategories[proj]||[]).join(', ') || '(미정의)';
+    return `<tr>
+      <td>${proj}</td>
+      <td>${budget ? fmt(budget) : '-'}</td>
+      <td class="num">${fmt(spent)}</td>
+      <td>${rate}</td>
+      <td>${status ? `<span class="status-badge s-${status}">${status}</span>` : '-'}</td>
+      <td class="td-truncate" title="${cats}">${cats}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
+
+  // 카테고리 표
+  const catSorted = Object.keys(catTotal).sort((a,b)=>catTotal[b]-catTotal[a]);
+  document.getElementById('tbody-category').innerHTML = catSorted.map(cat => {
+    const amt = catTotal[cat];
+    const pct = grandTotal ? (amt/grandTotal*100).toFixed(1)+'%' : '-';
+    return `<tr><td>${cat}</td><td class="num">${fmt(amt)}</td><td>${pct}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
+
+  // matrix table
+  let mHtml = '<thead><tr><th>프로젝트</th>' + catOrder.map(c=>`<th>${c}</th>`).join('') + '<th>합계</th></tr></thead><tbody>';
+  allProjects.forEach(proj => {
+    const defined = projCategories[proj] || [];
+    mHtml += `<tr><td>${proj}</td>`;
+    catOrder.forEach(cat => {
+      const v = (matrix[proj] && matrix[proj][cat]) || 0;
+      if (v) mHtml += `<td class="num">${fmt(v)}</td>`;
+      else if (defined.includes(cat)) mHtml += `<td class="num">${fmt(0)}</td>`;
+      else mHtml += `<td class="num na">-</td>`;
+    });
+    mHtml += `<td class="num" style="font-weight:600">${fmt(projTotal[proj]||0)}</td></tr>`;
+  });
+  mHtml += `<tr style="font-weight:600;background:var(--bg3)"><td>카테고리 합계</td>` +
+    catOrder.map(c=>`<td class="num">${fmt(catTotal[c]||0)}</td>`).join('') +
+    `<td class="num">${fmt(grandTotal)}</td></tr>`;
+  mHtml += '</tbody>';
+  document.getElementById('matrix-table').innerHTML = mHtml;
+
+  // charts
+  const destroy = id => { if (charts[id]) { charts[id].destroy(); delete charts[id]; } };
+  destroy('proj');
+  const palette = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308','#ef4444','#06b6d4','#10b981','#ec4899','#84cc16'];
+  destroy('proj');
+  charts['proj'] = new Chart(document.getElementById('chart-project').getContext('2d'), {
+    type: 'bar',
+    data: { labels: allProjects, datasets: [{ label: '집행액', data: allProjects.map(p=>projTotal[p]||0), backgroundColor: allProjects.map((_,i)=>palette[i%palette.length]+'cc'), borderRadius: 4 }] },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>v.toLocaleString()}}} }
+  });
+  destroy('cat');
+  charts['cat'] = new Chart(document.getElementById('chart-category').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: catSorted, datasets: [{ data: catSorted.map(c=>catTotal[c]), backgroundColor: catSorted.map((_,i)=>palette[i%palette.length]+'cc'), borderWidth: 0 }] },
+    options: { responsive:true, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}}}} }
+  });
+
+  // raw table + filters
+  const fProject = document.getElementById('f-project');
+  const fCategory = document.getElementById('f-category');
+  fProject.innerHTML = '<option value="">전체 프로젝트</option>' + allProjects.map(p=>`<option>${p}</option>`).join('');
+  fCategory.innerHTML = '<option value="">전체 카테고리</option>' + catOrder.map(c=>`<option>${c}</option>`).join('');
+  renderRaw();
+  fProject.onchange = renderRaw;
+  fCategory.onchange = renderRaw;
+}
+
+function renderRaw() {
+  const fp = document.getElementById('f-project').value;
+  const fc = document.getElementById('f-category').value;
+  const rows = costs.filter(c => (!fp || (c['프로젝트명']||'').trim()===fp) && (!fc || (c['카테고리']||'').trim()===fc));
+  document.getElementById('tbody-raw').innerHTML = rows.map(c => `
+    <tr>
+      <td>${c['프로젝트명']||'-'}</td>
+      <td><span class="badge">${c['카테고리']||'-'}</span></td>
+      <td class="td-truncate" title="${c['항목']||''}">${c['항목']||'-'}</td>
+      <td class="num">${fmt(toNum(c['금액']))}</td>
+      <td>${c['날짜']||'-'}</td>
+      <td>${c['상태'] ? `<span class="status-badge s-${c['상태'].trim()}">${c['상태']}</span>` : '-'}</td>
+      <td class="td-truncate" title="${c['비고']||''}">${c['비고']||'-'}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
+}
+
+function showPage(tab) {
+  ['summary','matrix','raw'].forEach(t => {
+    document.getElementById('page-'+t).style.display = t===tab ? '' : 'none';
+  });
+  document.querySelectorAll('.page-tab').forEach((btn,i) => {
+    btn.classList.toggle('active', ['summary','matrix','raw'][i]===tab);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  document.getElementById('reloadBtn') && document.getElementById('reloadBtn').addEventListener('click', loadAll);
+});
+</script>
+</body>
+</html>
