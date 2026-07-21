@@ -1,563 +1,170 @@
+#!/usr/bin/env python3
+"""
+projects.csv + categories.csv + costs.csv -> summary.md
 
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>콘텐츠 캘린더</title>
-<style>
-  :root {
-    color-scheme: light;
-    --bg: #ffffff;
-    --panel: #f8f9fb;
-    --border: #e4e6eb;
-    --text: #1f2328;
-    --muted: #6b7280;
-    --accent: #4f46e5;
-    --instagram: #e1306c;
-    --journal: #2f855a;
-    --blog: #2b6cb0;
-    --youtube: #e53e3e;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 16px 20px 32px;
-  }
-  h1 { font-size: 18px; margin: 0; font-weight: 700; }
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-  .topbar-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .nav-group { display: flex; align-items: center; gap: 6px; }
-  .nav-btn {
-    border: 1px solid var(--border);
-    background: #fff;
-    border-radius: 8px;
-    width: 30px; height: 30px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .nav-btn:hover { background: var(--panel); }
-  .month-label { font-size: 15px; font-weight: 700; min-width: 100px; text-align: center; }
-  .today-btn, .tab-btn, .primary-btn {
-    border: 1px solid var(--border);
-    background: #fff;
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text);
-  }
-  .primary-btn { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
-  .primary-btn:hover { opacity: 0.9; }
-  .tabs { display: flex; gap: 4px; background: var(--panel); border-radius: 8px; padding: 3px; }
-  .tab-btn { border: none; background: transparent; border-radius: 6px; }
-  .tab-btn.active { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.08); font-weight: 700; }
-  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .legend-chip {
-    display: flex; align-items: center; gap: 6px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    user-select: none;
-    background: #fff;
-  }
-  .legend-chip.off { opacity: 0.4; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .calendar {
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .dow-row, .week-row { display: grid; grid-template-columns: repeat(7, 1fr); }
-  .dow-cell {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    padding: 8px 0;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-  }
-  .dow-cell.sun { color: var(--instagram); }
-  .dow-cell.sat { color: var(--blog); }
-  .day-cell {
-    min-height: 96px;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 6px;
-    vertical-align: top;
-    position: relative;
-    cursor: pointer;
-  }
-  .week-row .day-cell:last-child { border-right: none; }
-  .day-cell:hover { background: #fafbff; }
-  .day-cell.other-month { background: #fbfbfc; color: #c4c8ce; }
-  .day-cell.today .date-num {
-    background: var(--accent);
-    color: #fff;
-    border-radius: 50%;
-  }
-  .date-num {
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px; height: 20px;
-  }
-  .item-chip {
-    margin-top: 4px;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 5px;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-  }
-  .more-chip {
-    margin-top: 4px;
-    font-size: 11px;
-    color: var(--muted);
-    padding: 2px 6px;
-  }
-  /* Modal */
-  .overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(20,20,25,0.35);
-    align-items: center; justify-content: center;
-    z-index: 50;
-  }
-  .overlay.show { display: flex; }
-  .modal {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px 22px;
-    width: 360px;
-    max-width: 90vw;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
-  }
-  .modal h2 { font-size: 15px; margin: 0 0 14px; }
-  .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
-  .field input[type=text], .field input[type=date], .field select, .field textarea {
-    width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-family: inherit;
-    color: var(--text);
-  }
-  .field textarea { resize: vertical; min-height: 50px; }
-  .cat-options { display: flex; gap: 6px; flex-wrap: wrap; }
-  .cat-opt {
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .cat-opt.selected { border-color: currentColor; background: color-mix(in srgb, currentColor 12%, white); font-weight: 700; }
-  .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
-  .modal-actions .left { display: flex; gap: 8px; }
-  .btn { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
-  .btn.danger { color: var(--youtube); border-color: var(--youtube); }
-  .btn.ghost { border: none; color: var(--muted); }
-  .btn.save { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
-  /* Archive view */
-  .archive-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .archive-table th, .archive-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
-  .archive-table th { color: var(--muted); font-size: 12px; font-weight: 700; }
-  .cat-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; }
-  .empty-state { text-align: center; color: var(--muted); padding: 40px 0; font-size: 13px; }
-  .archive-actions button { margin-right: 6px; }
-</style>
-</head>
-<body>
- 
-<div class="topbar">
-  <div class="topbar-left">
-    <h1>콘텐츠 캘린더</h1>
-    <div class="nav-group">
-      <button class="nav-btn" id="prevMonth">‹</button>
-      <div class="month-label" id="monthLabel">2026년 7월</div>
-      <button class="nav-btn" id="nextMonth">›</button>
-    </div>
-    <button class="today-btn" id="todayBtn">오늘</button>
-    <div class="tabs">
-      <button class="tab-btn active" data-view="calendar">캘린더</button>
-      <button class="tab-btn" data-view="archive">아카이브</button>
-    </div>
-  </div>
-  <button class="primary-btn" id="addBtn">+ 새 콘텐츠</button>
-</div>
- 
-<div class="legend" id="legend"></div>
- 
-<div id="calendarView"></div>
-<div id="archiveView" style="display:none;"></div>
- 
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h2 id="modalTitle">새 콘텐츠</h2>
-    <input type="hidden" id="itemId">
-    <div class="field">
-      <label>날짜</label>
-      <input type="date" id="fieldDate">
-    </div>
-    <div class="field">
-      <label>카테고리</label>
-      <div class="cat-options" id="catOptions"></div>
-    </div>
-    <div class="field">
-      <label>브랜드</label>
-      <input type="text" id="fieldBrand" placeholder="예: 무브먼트랩">
-    </div>
-    <div class="field">
-      <label>제목</label>
-      <input type="text" id="fieldTitle" placeholder="콘텐츠 제목">
-    </div>
-    <div class="field">
-      <label>메모 (선택)</label>
-      <textarea id="fieldMemo" placeholder="추가 메모"></textarea>
-    </div>
-    <div class="modal-actions">
-      <div class="left">
-        <button class="btn danger" id="archiveBtn" style="display:none;">아카이브</button>
-      </div>
-      <div class="left">
-        <button class="btn ghost" id="cancelBtn">취소</button>
-        <button class="btn save" id="saveBtn">저장</button>
-      </div>
-    </div>
-  </div>
-</div>
- 
-<script>
-(function(){
-  const STORAGE_KEY = 'content_calendar_items_v1';
-  const CATEGORIES = [
-    { key: 'instagram', label: '인스타그램', color: 'var(--instagram)' },
-    { key: 'journal',   label: '저널',       color: 'var(--journal)' },
-    { key: 'blog',      label: '블로그',      color: 'var(--blog)' },
-    { key: 'youtube',   label: '유튜브',      color: 'var(--youtube)' },
-  ];
-  const catMap = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
- 
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  } catch(e) { items = []; }
- 
-  let activeFilters = new Set(CATEGORIES.map(c => c.key));
-  let currentView = 'calendar';
-  let selectedCategory = CATEGORIES[0].key;
-  let viewDate = new Date();
-  const todayStr = fmtDate(new Date());
- 
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }
- 
-  function fmtDate(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,'0');
-    const day = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${day}`;
-  }
- 
-  function uid() {
-    return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-  }
- 
-  // ---------- Legend ----------
-  function renderLegend() {
-    const el = document.getElementById('legend');
-    el.innerHTML = '';
-    CATEGORIES.forEach(c => {
-      const chip = document.createElement('div');
-      chip.className = 'legend-chip' + (activeFilters.has(c.key) ? '' : ' off');
-      chip.innerHTML = `<span class="dot" style="background:${c.color}"></span>${c.label}`;
-      chip.onclick = () => {
-        if (activeFilters.has(c.key)) activeFilters.delete(c.key);
-        else activeFilters.add(c.key);
-        renderLegend();
-        renderCalendar();
-      };
-      el.appendChild(chip);
-    });
-  }
- 
-  // ---------- Calendar ----------
-  function renderCalendar() {
-    const container = document.getElementById('calendarView');
-    container.innerHTML = '';
- 
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-    document.getElementById('monthLabel').textContent = `${year}년 ${month+1}월`;
- 
-    const firstOfMonth = new Date(year, month, 1);
-    const startWeekday = firstOfMonth.getDay(); // 0 = Sun
-    const gridStart = new Date(year, month, 1 - startWeekday);
- 
-    const cal = document.createElement('div');
-    cal.className = 'calendar';
- 
-    const dowRow = document.createElement('div');
-    dowRow.className = 'dow-row';
-    ['일','월','화','수','목','금','토'].forEach((d,i) => {
-      const c = document.createElement('div');
-      c.className = 'dow-cell' + (i===0?' sun':'') + (i===6?' sat':'');
-      c.textContent = d;
-      dowRow.appendChild(c);
-    });
-    cal.appendChild(dowRow);
- 
-    const activeItems = items.filter(it => !it.archived && activeFilters.has(it.category));
-    const byDate = {};
-    activeItems.forEach(it => {
-      (byDate[it.date] = byDate[it.date] || []).push(it);
-    });
- 
-    const totalCells = 42; // 6 weeks
-    for (let w = 0; w < 6; w++) {
-      const weekRow = document.createElement('div');
-      weekRow.className = 'week-row';
-      let anyThisMonth = false;
-      for (let d = 0; d < 7; d++) {
-        const idx = w*7 + d;
-        const cellDate = new Date(gridStart);
-        cellDate.setDate(gridStart.getDate() + idx);
-        const dateStr = fmtDate(cellDate);
-        const inMonth = cellDate.getMonth() === month;
-        if (inMonth) anyThisMonth = true;
- 
-        const cell = document.createElement('div');
-        cell.className = 'day-cell' + (inMonth ? '' : ' other-month') + (dateStr === todayStr ? ' today' : '');
-        cell.onclick = (e) => {
-          if (e.target.closest('.item-chip') || e.target.closest('.more-chip')) return;
-          openModal(null, dateStr);
-        };
- 
-        const num = document.createElement('span');
-        num.className = 'date-num';
-        num.textContent = cellDate.getDate();
-        cell.appendChild(num);
- 
-        const dayItems = (byDate[dateStr] || []);
-        const shown = dayItems.slice(0, 3);
-        shown.forEach(it => {
-          const chip = document.createElement('div');
-          chip.className = 'item-chip';
-          const cat = catMap[it.category];
-          chip.style.background = cat.color;
-          chip.textContent = (it.brand ? it.brand + ' · ' : '') + it.title;
-          chip.title = `${cat.label} / ${it.brand || ''} / ${it.title}`;
-          chip.onclick = (e) => { e.stopPropagation(); openModal(it.id); };
-          cell.appendChild(chip);
-        });
-        if (dayItems.length > 3) {
-          const more = document.createElement('div');
-          more.className = 'more-chip';
-          more.textContent = `+${dayItems.length - 3}개 더보기`;
-          more.onclick = (e) => { e.stopPropagation(); openModal(dayItems[3].id); };
-          cell.appendChild(more);
-        }
- 
-        weekRow.appendChild(cell);
-      }
-      cal.appendChild(weekRow);
-      if (!anyThisMonth && w >= 4) break; // trim trailing empty week if it holds no month days
-    }
- 
-    container.appendChild(cal);
-  }
- 
-  // ---------- Archive ----------
-  function renderArchive() {
-    const container = document.getElementById('archiveView');
-    container.innerHTML = '';
-    const archived = items.filter(it => it.archived).sort((a,b) => b.date.localeCompare(a.date));
- 
-    if (archived.length === 0) {
-      container.innerHTML = '<div class="empty-state">아카이브된 콘텐츠가 없습니다.</div>';
-      return;
-    }
- 
-    const table = document.createElement('table');
-    table.className = 'archive-table';
-    table.innerHTML = `<thead><tr>
-      <th>날짜</th><th>카테고리</th><th>브랜드</th><th>제목</th><th>메모</th><th></th>
-    </tr></thead>`;
-    const tbody = document.createElement('tbody');
-    archived.forEach(it => {
-      const cat = catMap[it.category];
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${it.date}</td>
-        <td><span class="cat-badge"><span class="dot" style="background:${cat.color}"></span>${cat.label}</span></td>
-        <td>${escapeHtml(it.brand || '-')}</td>
-        <td>${escapeHtml(it.title)}</td>
-        <td>${escapeHtml(it.memo || '-')}</td>
-        <td class="archive-actions"></td>
-      `;
-      const actionsTd = tr.querySelector('.archive-actions');
-      const restoreBtn = document.createElement('button');
-      restoreBtn.className = 'btn';
-      restoreBtn.textContent = '복원';
-      restoreBtn.onclick = () => {
-        it.archived = false;
-        save();
-        renderArchive();
-        renderCalendar();
-      };
-      const delBtn = document.createElement('button');
-      delBtn.className = 'btn danger';
-      delBtn.textContent = '완전삭제';
-      delBtn.onclick = () => {
-        if (!confirm('완전히 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
-        items = items.filter(x => x.id !== it.id);
-        save();
-        renderArchive();
-      };
-      actionsTd.appendChild(restoreBtn);
-      actionsTd.appendChild(delBtn);
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    container.appendChild(table);
-  }
- 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
- 
-  // ---------- Modal ----------
-  function renderCatOptions() {
-    const el = document.getElementById('catOptions');
-    el.innerHTML = '';
-    CATEGORIES.forEach(c => {
-      const opt = document.createElement('div');
-      opt.className = 'cat-opt' + (selectedCategory === c.key ? ' selected' : '');
-      opt.style.color = c.color;
-      opt.innerHTML = `<span class="dot" style="background:${c.color}"></span>${c.label}`;
-      opt.onclick = () => { selectedCategory = c.key; renderCatOptions(); };
-      el.appendChild(opt);
-    });
-  }
- 
-  function openModal(id, prefillDate) {
-    const overlay = document.getElementById('overlay');
-    const item = id ? items.find(i => i.id === id) : null;
-    document.getElementById('modalTitle').textContent = item ? '콘텐츠 수정' : '새 콘텐츠';
-    document.getElementById('itemId').value = item ? item.id : '';
-    document.getElementById('fieldDate').value = item ? item.date : (prefillDate || todayStr);
-    selectedCategory = item ? item.category : CATEGORIES[0].key;
-    renderCatOptions();
-    document.getElementById('fieldBrand').value = item ? (item.brand || '') : '';
-    document.getElementById('fieldTitle').value = item ? item.title : '';
-    document.getElementById('fieldMemo').value = item ? (item.memo || '') : '';
-    document.getElementById('archiveBtn').style.display = item ? 'inline-block' : 'none';
-    overlay.classList.add('show');
-    setTimeout(() => document.getElementById('fieldTitle').focus(), 0);
-  }
- 
-  function closeModal() {
-    document.getElementById('overlay').classList.remove('show');
-  }
- 
-  document.getElementById('cancelBtn').onclick = closeModal;
-  document.getElementById('overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'overlay') closeModal();
-  });
- 
-  document.getElementById('saveBtn').onclick = () => {
-    const id = document.getElementById('itemId').value;
-    const date = document.getElementById('fieldDate').value;
-    const brand = document.getElementById('fieldBrand').value.trim();
-    const title = document.getElementById('fieldTitle').value.trim();
-    const memo = document.getElementById('fieldMemo').value.trim();
- 
-    if (!date) { alert('날짜를 선택해 주세요.'); return; }
-    if (!title) { alert('제목을 입력해 주세요.'); return; }
- 
-    if (id) {
-      const item = items.find(i => i.id === id);
-      Object.assign(item, { date, category: selectedCategory, brand, title, memo });
-    } else {
-      items.push({
-        id: uid(),
-        date, category: selectedCategory, brand, title, memo,
-        archived: false,
-        createdAt: new Date().toISOString(),
-      });
-    }
-    save();
-    closeModal();
-    renderCalendar();
-    renderArchive();
-  };
- 
-  document.getElementById('archiveBtn').onclick = () => {
-    const id = document.getElementById('itemId').value;
-    const item = items.find(i => i.id === id);
-    if (item) {
-      item.archived = true;
-      save();
-      closeModal();
-      renderCalendar();
-      renderArchive();
-    }
-  };
- 
-  // ---------- Nav ----------
-  document.getElementById('prevMonth').onclick = () => {
-    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1);
-    renderCalendar();
-  };
-  document.getElementById('nextMonth').onclick = () => {
-    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1);
-    renderCalendar();
-  };
-  document.getElementById('todayBtn').onclick = () => {
-    viewDate = new Date();
-    renderCalendar();
-  };
-  document.getElementById('addBtn').onclick = () => openModal(null, fmtDate(viewDate.getMonth()===new Date().getMonth() ? new Date() : viewDate));
- 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentView = btn.dataset.view;
-      document.getElementById('calendarView').style.display = currentView === 'calendar' ? 'block' : 'none';
-      document.getElementById('archiveView').style.display = currentView === 'archive' ? 'block' : 'none';
-      if (currentView === 'archive') renderArchive();
-    };
-  });
- 
-  renderLegend();
-  renderCalendar();
-  renderArchive();
-})();
-</script>
-</body>
-</html>
- 
+- projects.csv   : 프로젝트명,시작일,종료일,총예산,담당자,상태
+- categories.csv : 프로젝트명,카테고리
+    프로젝트마다 사용할 비용 카테고리를 정의하는 파일. 프로젝트별로 항목이 다 달라도 됨.
+    카테고리를 추가/삭제/이름변경 하고 싶으면 이 파일을 직접 편집하면 됨
+    (같은 프로젝트명에 여러 행을 추가해서 카테고리를 여러 개 정의).
+- costs.csv      : 프로젝트명,카테고리,항목,금액,날짜,상태,비고
+    실제 지출 한 건씩 기록. 카테고리는 자유 텍스트지만, categories.csv에 정의된
+    이름과 철자가 같아야 교차표/집계에 정확히 반영됨.
+
+실행: python3 summarize.py
+아무 CSV나 수정한 뒤 다시 실행하면 summary.md가 최신 내용으로 갱신됩니다.
+"""
+import csv
+from pathlib import Path
+from collections import defaultdict
+
+BASE = Path(__file__).parent
+
+def load_csv(name):
+    path = BASE / name
+    with open(path, encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+def to_num(v):
+    try:
+        return float(str(v).replace(",", "").strip() or 0)
+    except ValueError:
+        return 0
+
+def fmt(n):
+    return f"{n:,.0f}원"
+
+def main():
+    projects = load_csv("projects.csv")
+    categories = load_csv("categories.csv")
+    costs = load_csv("costs.csv")
+
+    proj_order = [p["프로젝트명"] for p in projects]
+    proj_budget = {p["프로젝트명"]: to_num(p.get("총예산")) for p in projects}
+    status_map = {p["프로젝트명"]: p.get("상태", "") for p in projects}
+
+    # 프로젝트별 정의된 카테고리 (순서 보존)
+    proj_categories = defaultdict(list)
+    for row in categories:
+        proj = row["프로젝트명"].strip()
+        cat = row["카테고리"].strip()
+        if cat not in proj_categories[proj]:
+            proj_categories[proj].append(cat)
+
+    # 교차표에 쓸 전체 카테고리 순서 (categories.csv 등장 순서 기준)
+    cat_order = []
+    for row in categories:
+        cat = row["카테고리"].strip()
+        if cat not in cat_order:
+            cat_order.append(cat)
+
+    # matrix[project][category] = sum
+    matrix = defaultdict(lambda: defaultdict(float))
+    proj_total = defaultdict(float)
+    cat_total = defaultdict(float)
+    unknown_projects = []
+    undefined_cat_issues = []  # (project, category) 조합이 categories.csv에 없는 경우
+
+    for c in costs:
+        proj = c["프로젝트명"].strip()
+        cat = c["카테고리"].strip()
+        amt = to_num(c["금액"])
+        matrix[proj][cat] += amt
+        proj_total[proj] += amt
+        cat_total[cat] += amt
+        if cat not in cat_order:
+            cat_order.append(cat)
+        if proj not in proj_order and proj not in unknown_projects:
+            unknown_projects.append(proj)
+        if proj in proj_categories and cat not in proj_categories[proj]:
+            if (proj, cat) not in undefined_cat_issues:
+                undefined_cat_issues.append((proj, cat))
+
+    all_projects = proj_order + unknown_projects
+    grand_total = sum(proj_total.values())
+
+    lines = []
+    lines.append("# 비용 요약\n")
+    lines.append("(projects.csv / categories.csv / costs.csv 로부터 자동 생성 — 수정 후 `python3 summarize.py` 재실행)\n")
+
+    # 0. 프로젝트별 정의된 카테고리
+    lines.append("## 프로젝트별 비용 카테고리 정의\n")
+    lines.append("(categories.csv 를 편집하면 여기가 바뀝니다)\n")
+    lines.append("| 프로젝트 | 정의된 카테고리 |")
+    lines.append("|---|---|")
+    for proj in all_projects:
+        cats = proj_categories.get(proj, [])
+        lines.append(f"| {proj} | {', '.join(cats) if cats else '(미정의 — categories.csv에 추가 필요)'} |")
+    lines.append("")
+
+    # 1. 프로젝트별 합계
+    lines.append("## 프로젝트별 집행액\n")
+    lines.append("| 프로젝트 | 총예산 | 집행액 | 집행률 | 상태 |")
+    lines.append("|---|---|---|---|---|")
+    for proj in all_projects:
+        budget = proj_budget.get(proj, 0)
+        spent = proj_total.get(proj, 0)
+        rate = f"{spent/budget*100:.1f}%" if budget else "-"
+        budget_s = fmt(budget) if budget else "-"
+        lines.append(f"| {proj} | {budget_s} | {fmt(spent)} | {rate} | {status_map.get(proj,'-')} |")
+    lines.append(f"| **합계** | | **{fmt(grand_total)}** | | |\n")
+
+    # 2. 카테고리별 합계
+    lines.append("## 카테고리별 집행액 (전체 프로젝트 통합)\n")
+    lines.append("| 카테고리 | 금액 | 비중 |")
+    lines.append("|---|---|---|")
+    for cat in sorted(cat_total, key=lambda c: -cat_total[c]):
+        amt = cat_total[cat]
+        pct = f"{amt/grand_total*100:.1f}%" if grand_total else "-"
+        lines.append(f"| {cat} | {fmt(amt)} | {pct} |")
+    lines.append("")
+
+    # 3. 프로젝트 x 카테고리 교차표
+    # 셀 표시 규칙: 그 프로젝트에 정의된 카테고리가 아니면 "-" (해당 없음),
+    # 정의되어 있으면 지출이 0이어도 0원으로 표시
+    lines.append("## 프로젝트 x 카테고리 교차표\n")
+    lines.append("(\"-\" = 해당 프로젝트에 정의되지 않은 카테고리)\n")
+    header = "| 프로젝트 | " + " | ".join(cat_order) + " | 합계 |"
+    sep = "|---" * (len(cat_order) + 2) + "|"
+    lines.append(header)
+    lines.append(sep)
+    for proj in all_projects:
+        row = [proj]
+        defined = proj_categories.get(proj, [])
+        for cat in cat_order:
+            v = matrix[proj].get(cat, 0)
+            if v:
+                row.append(fmt(v))
+            elif defined and cat in defined:
+                row.append(fmt(0))
+            elif not defined:
+                row.append("-")
+            else:
+                row.append("-")
+        row.append(fmt(proj_total.get(proj, 0)))
+        lines.append("| " + " | ".join(row) + " |")
+    cat_row = ["**카테고리 합계**"]
+    for cat in cat_order:
+        cat_row.append(fmt(cat_total.get(cat, 0)))
+    cat_row.append(fmt(grand_total))
+    lines.append("| " + " | ".join(cat_row) + " |")
+
+    warnings = []
+    if unknown_projects:
+        warnings.append("⚠️ projects.csv에 없는 프로젝트명이 costs.csv에서 발견됨: "
+                         + ", ".join(unknown_projects) + " (오타 여부 확인 필요)")
+    if undefined_cat_issues:
+        detail = ", ".join(f"{p}→{c}" for p, c in undefined_cat_issues)
+        warnings.append("⚠️ categories.csv에 정의되지 않은 카테고리가 costs.csv에서 사용됨: "
+                         + detail + " (오타이거나, categories.csv에 새 카테고리 추가 필요)")
+    if warnings:
+        lines.append("")
+        for w in warnings:
+            lines.append(f"> {w}")
+
+    out = "\n".join(lines) + "\n"
+    (BASE / "summary.md").write_text(out, encoding="utf-8")
+    print(out)
+
+if __name__ == "__main__":
+    main()
