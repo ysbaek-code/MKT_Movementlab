@@ -16,9 +16,15 @@
 }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
 .app { max-width: 1120px; margin: 0 auto; padding: 2rem 1.5rem; }
-.app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; gap: 10px; }
 .app-header h1 { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.app-header .right { display: flex; align-items: center; gap: 10px; }
 .app-header .src-note { font-size: 11px; color: var(--text3); }
+.icon-btn { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); font-size: 15px; }
+.icon-btn:hover { background: var(--bg); color: var(--text); }
+.token-pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; }
+.token-pill.on  { background: #e8f5e9; color: #2e7d32; }
+.token-pill.off { background: #f5f5f5; color: #616161; }
 .page-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
 .page-tab { font-size: 13px; padding: 9px 18px; border: none; background: none; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: color .15s; }
 .page-tab.active { color: var(--text); border-bottom-color: var(--text); }
@@ -30,8 +36,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD G
 .metric-card .sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .filters { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
 .filters select { font-size: 13px; padding: 5px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); height: 32px; cursor: pointer; }
-.btn-reload { margin-left: auto; font-size: 13px; padding: 5px 14px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; height: 32px; display: flex; align-items: center; gap: 5px; }
-.btn-reload:hover { opacity: .85; }
+.btn-reload, .btn-add { font-size: 13px; padding: 5px 14px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; height: 32px; display: flex; align-items: center; gap: 5px; }
+.btn-add.secondary { background: var(--bg2); color: var(--text); }
+.btn-reload:hover, .btn-add:hover { opacity: .85; }
+.section-title-row { display: flex; align-items: center; justify-content: space-between; margin: 1.25rem 0 .75rem; }
+.section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
 .table-wrap { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); overflow-x: auto; margin-bottom: 1.25rem; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th { font-size: 11px; font-weight: 500; color: var(--text2); padding: 10px 12px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; background: var(--bg3); }
@@ -46,7 +55,9 @@ tfoot td { padding: 10px 12px; font-weight: 600; background: var(--bg3); border-
 .s-진행중 { background: #e8f5e9; color: #2e7d32; }
 .s-예정   { background: #e3f2fd; color: #1565c0; }
 .s-완료   { background: #f5f5f5; color: #616161; }
-.section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin: 1.25rem 0 .75rem; }
+.btn-edit, .btn-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 3px 5px; border-radius: 4px; }
+.btn-edit:hover { color: #1a6ea8; background: #e6f5ff; }
+.btn-del:hover  { color: #c0392b; background: #fdecea; }
 .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
 .chart-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
 .chart-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 1rem; color: var(--text2); }
@@ -56,13 +67,44 @@ tfoot td { padding: 10px 12px; font-weight: 600; background: var(--bg3); border-
 .warn-box div + div { margin-top: 4px; }
 .load-msg { text-align: center; padding: 3rem; color: var(--text3); }
 .na { color: var(--text3); }
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+.modal.open { display: flex; }
+.modal-box { background: var(--bg2); border-radius: var(--r2); padding: 1.5rem; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.15); }
+.modal-box h2 { font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: 1/-1; }
+.form-group label { font-size: 11px; color: var(--text2); }
+.form-group input, .form-group select, .form-group textarea { font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--bg2); color: var(--text); width: 100%; font-family: inherit; }
+.form-group textarea { resize: vertical; min-height: 50px; }
+.form-hint { font-size: 11px; color: var(--text3); }
+.modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 1.25rem; }
+.modal-footer .right-btns { display: flex; gap: 8px; }
+.btn-cancel { font-size: 13px; padding: 7px 16px; border: 0.5px solid var(--border); border-radius: var(--r); background: none; color: var(--text); cursor: pointer; }
+.btn-save   { font-size: 13px; padding: 7px 16px; border: none; border-radius: var(--r); background: var(--text); color: #fff; cursor: pointer; }
+.btn-danger { font-size: 13px; padding: 7px 16px; border: 0.5px solid #f0b0a8; border-radius: var(--r); background: #fdecea; color: #c0392b; cursor: pointer; }
+.btn-cancel:hover { background: var(--bg); }
+.btn-save:hover   { opacity: .85; }
+.btn-danger:hover { opacity: .85; }
+.modal-msg { font-size: 12px; margin-top: 8px; min-height: 16px; }
+.modal-msg.error { color: #c0392b; }
+.modal-msg.ok { color: #2e7d32; }
+.security-note { font-size: 11.5px; color: var(--text2); background: var(--bg3); border-radius: var(--r); padding: .6rem .75rem; margin-top: .5rem; line-height: 1.5; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 200; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; margin-right: 6px; vertical-align: -1px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="app-header">
     <h1><i class="ti ti-report-money" style="font-size:18px"></i> 프로젝트 비용 관리 대시보드</h1>
-    <span class="src-note" id="src-note">데이터 불러오는 중...</span>
+    <div class="right">
+      <span class="src-note" id="src-note">데이터 불러오는 중...</span>
+      <span class="token-pill off" id="token-pill">토큰 없음</span>
+      <button class="icon-btn" id="settingsBtn" title="설정"><i class="ti ti-settings"></i></button>
+    </div>
   </div>
   <div class="page-tabs">
     <button class="page-tab active" onclick="showPage('summary')">요약</button>
@@ -82,10 +124,13 @@ tfoot td { padding: 10px 12px; font-weight: 600; background: var(--bg3); border-
         <div class="chart-card"><h3>프로젝트별 집행액</h3><canvas id="chart-project"></canvas></div>
         <div class="chart-card"><h3>카테고리별 집행액 (통합)</h3><canvas id="chart-category"></canvas></div>
       </div>
-      <div class="section-title">프로젝트별 집행액</div>
+      <div class="section-title-row">
+        <div class="section-title">프로젝트별 집행액</div>
+        <button class="btn-add" id="addProjectBtn"><i class="ti ti-plus"></i> 새 프로젝트</button>
+      </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>프로젝트</th><th>총예산</th><th class="num">집행액</th><th>집행률</th><th>상태</th><th>정의된 카테고리</th></tr></thead>
+          <thead><tr><th>프로젝트</th><th>총예산</th><th class="num">집행액</th><th>집행률</th><th>상태</th><th>정의된 카테고리</th><th></th></tr></thead>
           <tbody id="tbody-project"></tbody>
         </table>
       </div>
@@ -111,11 +156,12 @@ tfoot td { padding: 10px 12px; font-weight: 600; background: var(--bg3); border-
       <div class="filters">
         <select id="f-project"><option value="">전체 프로젝트</option></select>
         <select id="f-category"><option value="">전체 카테고리</option></select>
-        <button class="btn-reload" id="reloadBtn"><i class="ti ti-refresh"></i> 새로고침</button>
+        <button class="btn-add secondary" id="reloadBtn"><i class="ti ti-refresh"></i> 새로고침</button>
+        <button class="btn-add" id="addCostBtn"><i class="ti ti-plus"></i> 새 지출 추가</button>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>프로젝트</th><th>카테고리</th><th>항목</th><th class="num">금액</th><th>날짜</th><th>상태</th><th>비고</th></tr></thead>
+          <thead><tr><th>프로젝트</th><th>카테고리</th><th>항목</th><th class="num">금액</th><th>날짜</th><th>상태</th><th>비고</th><th></th></tr></thead>
           <tbody id="tbody-raw"></tbody>
         </table>
       </div>
@@ -123,13 +169,221 @@ tfoot td { padding: 10px 12px; font-weight: 600; background: var(--bg3); border-
   </div>
 </div>
 
+<!-- 설정(토큰) 모달 -->
+<div class="modal" id="settingsModal">
+  <div class="modal-box">
+    <h2>GitHub 연동 설정</h2>
+    <div class="form-group full">
+      <label>Personal Access Token (fine-grained, 이 저장소 Contents 읽기/쓰기 권한)</label>
+      <input type="password" id="tokenInput" placeholder="github_pat_...">
+    </div>
+    <div class="security-note">
+      이 토큰은 <b>이 브라우저(로컬)에만</b> 저장되고, 저장소 코드에는 들어가지 않습니다. 다만 이 브라우저를 다른 사람과 같이 쓰신다면(공용 PC 등) 저장하지 않는 걸 추천드려요.
+      토큰은 GitHub 우측상단 프로필 → Settings → Developer settings → Fine-grained tokens 에서 이 저장소만 선택해서 Contents: Read/Write 권한으로 발급하면 됩니다.
+    </div>
+    <div class="modal-msg" id="settingsMsg"></div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="clearTokenBtn">토큰 삭제</button>
+      <div class="right-btns">
+        <button class="btn-cancel" id="closeSettings">닫기</button>
+        <button class="btn-save" id="saveTokenBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 지출 추가/수정 모달 -->
+<div class="modal" id="costModal">
+  <div class="modal-box">
+    <h2 id="costModalTitle">새 지출 추가</h2>
+    <div class="form-row">
+      <div class="form-group"><label>프로젝트</label>
+        <select id="c-project"></select>
+      </div>
+      <div class="form-group"><label>카테고리</label>
+        <input id="c-category" list="c-category-list" placeholder="카테고리 선택 또는 직접입력">
+        <datalist id="c-category-list"></datalist>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full"><label>항목</label><input id="c-item" placeholder="예: TXTR 로에램프"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>금액</label><input id="c-amount" type="number" placeholder="0"></div>
+      <div class="form-group"><label>날짜</label><input id="c-date" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>상태</label>
+        <select id="c-status"><option>진행중</option><option>예정</option><option>완료</option></select>
+      </div>
+      <div class="form-group"><label>비고</label><input id="c-note" placeholder=""></div>
+    </div>
+    <div class="modal-msg" id="costModalMsg"></div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="deleteCostBtn" style="display:none">삭제</button>
+      <div class="right-btns">
+        <button class="btn-cancel" id="closeCostModal">취소</button>
+        <button class="btn-save" id="saveCostBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 프로젝트 추가/수정 모달 -->
+<div class="modal" id="projectModal">
+  <div class="modal-box">
+    <h2 id="projectModalTitle">새 프로젝트 추가</h2>
+    <div class="form-row">
+      <div class="form-group full"><label>프로젝트명</label><input id="p-name" placeholder="예: 큐레이터·앰버서더 2기"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>시작일</label><input id="p-start" type="date"></div>
+      <div class="form-group"><label>종료일</label><input id="p-end" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>총예산</label><input id="p-budget" type="number" placeholder="0 (모르면 비워두기)"></div>
+      <div class="form-group"><label>담당자</label><input id="p-owner" placeholder=""></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>상태</label>
+        <select id="p-status"><option>진행중</option><option>예정</option><option>완료</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group full">
+        <label>이 프로젝트에서 쓸 카테고리 (쉼표로 구분)</label>
+        <textarea id="p-categories" placeholder="예: 협찬, 기프트, 부대비용"></textarea>
+        <span class="form-hint">여기에 적은 목록으로 categories.csv가 통째로 갱신됩니다 (이 프로젝트 카테고리만)</span>
+      </div>
+    </div>
+    <div class="modal-msg" id="projectModalMsg"></div>
+    <div class="modal-footer">
+      <button class="btn-danger" id="deleteProjectBtn" style="display:none">삭제</button>
+      <div class="right-btns">
+        <button class="btn-cancel" id="closeProjectModal">취소</button>
+        <button class="btn-save" id="saveProjectBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
+// ===== 설정: 이 저장소 정보 =====
+const GH_OWNER = 'ysbaek-code';
+const GH_REPO = 'MKT_Movementlab';
+const GH_BRANCH = 'main';
+const TOKEN_KEY = 'gh_pat_' + GH_REPO;
+
 let projects = [], categories = [], costs = [];
 let charts = {};
+let editingCost = null;   // 수정 중인 원본 row 객체 (costs.csv)
+let editingProject = null; // 수정 중인 원본 row 객체 (projects.csv)
 
 function fmt(n) { return (n||0).toLocaleString('ko-KR') + '원'; }
 function toNum(v) { const n = parseFloat(String(v||'').replace(/,/g,'').trim()); return isNaN(n) ? 0 : n; }
 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ===== 토큰 관리 =====
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+function setToken(t) { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); updateTokenPill(); }
+function updateTokenPill() {
+  const pill = document.getElementById('token-pill');
+  if (getToken()) { pill.textContent = '토큰 연결됨'; pill.className = 'token-pill on'; }
+  else { pill.textContent = '토큰 없음'; pill.className = 'token-pill off'; }
+}
+
+// ===== UTF-8 안전 base64 =====
+function b64EncodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
+function b64DecodeUtf8(b64) { return decodeURIComponent(escape(atob(b64.replace(/\n/g, '')))); }
+
+// ===== GitHub Contents API =====
+async function ghGetFile(path) {
+  const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}&_=${Date.now()}`, {
+    headers: { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/vnd.github+json' }
+  });
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) throw new Error('토큰이 유효하지 않거나 권한이 부족합니다 (설정에서 토큰을 확인해주세요)');
+    throw new Error(path + ' 조회 실패 (' + res.status + ')');
+  }
+  const data = await res.json();
+  return { content: b64DecodeUtf8(data.content), sha: data.sha };
+}
+
+async function ghPutFile(path, newContent, sha, message) {
+  const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, content: b64EncodeUtf8(newContent), sha, branch: GH_BRANCH })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    if (res.status === 409) throw new Error('다른 곳에서 방금 파일이 바뀌었어요. 새로고침 후 다시 시도해주세요.');
+    if (res.status === 401 || res.status === 403) throw new Error('토큰이 유효하지 않거나 권한이 부족합니다 (설정에서 토큰을 확인해주세요)');
+    throw new Error('저장 실패 (' + res.status + '): ' + (err.message || ''));
+  }
+  return res.json();
+}
+
+function rowsEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+async function appendCsvRow(path, newRow, message) {
+  const { content, sha } = await ghGetFile(path);
+  const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
+  parsed.data.push(newRow);
+  const newCsv = Papa.unparse({ fields: parsed.meta.fields, data: parsed.data });
+  await ghPutFile(path, newCsv + '\n', sha, message);
+}
+
+async function updateCsvRowByMatch(path, oldRow, newRow, message) {
+  const { content, sha } = await ghGetFile(path);
+  const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
+  const idx = parsed.data.findIndex(r => rowsEqual(r, oldRow));
+  if (idx === -1) throw new Error('원본 데이터가 변경되어 수정할 행을 찾지 못했습니다. 새로고침 후 다시 시도해주세요.');
+  parsed.data[idx] = newRow;
+  const newCsv = Papa.unparse({ fields: parsed.meta.fields, data: parsed.data });
+  await ghPutFile(path, newCsv + '\n', sha, message);
+}
+
+async function deleteCsvRowByMatch(path, oldRow, message) {
+  const { content, sha } = await ghGetFile(path);
+  const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
+  const idx = parsed.data.findIndex(r => rowsEqual(r, oldRow));
+  if (idx === -1) throw new Error('원본 데이터가 변경되어 삭제할 행을 찾지 못했습니다. 새로고침 후 다시 시도해주세요.');
+  parsed.data.splice(idx, 1);
+  const newCsv = Papa.unparse({ fields: parsed.meta.fields, data: parsed.data });
+  await ghPutFile(path, newCsv + '\n', sha, message);
+}
+
+// 프로젝트의 카테고리 목록을 categories.csv에 통째로 반영 (해당 프로젝트 행 전부 교체)
+async function syncProjectCategories(projectName, categoryList) {
+  const { content, sha } = await ghGetFile('categories.csv');
+  const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
+  const fields = parsed.meta.fields && parsed.meta.fields.length ? parsed.meta.fields : ['프로젝트명', '카테고리'];
+  const kept = parsed.data.filter(r => (r['프로젝트명'] || '').trim() !== projectName);
+  const added = categoryList.filter(Boolean).map(cat => ({ '프로젝트명': projectName, '카테고리': cat }));
+  const newData = kept.concat(added);
+  const newCsv = Papa.unparse({ fields, data: newData });
+  await ghPutFile('categories.csv', newCsv + '\n', sha, `카테고리 갱신: ${projectName}`);
+}
+
+async function deleteProjectCategories(projectName) {
+  const { content, sha } = await ghGetFile('categories.csv');
+  const parsed = Papa.parse(content, { header: true, skipEmptyLines: true });
+  const kept = parsed.data.filter(r => (r['프로젝트명'] || '').trim() !== projectName);
+  const newCsv = Papa.unparse({ fields: parsed.meta.fields, data: kept });
+  await ghPutFile('categories.csv', newCsv + '\n', sha, `카테고리 삭제: ${projectName}`);
+}
+
+// ===== CSV 로드 (화면 표시용, Pages 정적 파일 기준) =====
 async function fetchCsv(name) {
   const res = await fetch(name, { cache: 'no-store' });
   if (!res.ok) throw new Error(name + ' 로드 실패 (' + res.status + ')');
@@ -145,7 +399,7 @@ async function loadAll() {
       fetchCsv('categories.csv'),
       fetchCsv('costs.csv'),
     ]);
-    document.getElementById('src-note').textContent = 'projects.csv / categories.csv / costs.csv 기준 (같은 저장소 파일을 직접 불러옴)';
+    document.getElementById('src-note').textContent = 'projects.csv / categories.csv / costs.csv 기준';
     render();
     document.getElementById('load-msg').style.display = 'none';
     document.getElementById('content').style.display = '';
@@ -164,7 +418,6 @@ function render() {
     statusMap[name] = (p['상태']||'').trim();
   });
 
-  // 프로젝트별 정의된 카테고리 (순서 보존)
   const projCategories = {};
   const catOrder = [];
   categories.forEach(row => {
@@ -176,7 +429,7 @@ function render() {
     if (!catOrder.includes(cat)) catOrder.push(cat);
   });
 
-  const matrix = {}; // matrix[proj][cat] = sum
+  const matrix = {};
   const projTotal = {}, catTotal = {};
   const unknownProjects = [];
   const undefinedCatIssues = [];
@@ -201,18 +454,12 @@ function render() {
   const allProjects = projOrder.concat(unknownProjects);
   const grandTotal = Object.values(projTotal).reduce((a,b)=>a+b, 0);
 
-  // warnings
   const warnArea = document.getElementById('warn-area');
   let warnHtml = '';
-  if (unknownProjects.length) {
-    warnHtml += '<div>⚠️ projects.csv에 없는 프로젝트명이 costs.csv에서 발견됨: ' + unknownProjects.join(', ') + '</div>';
-  }
-  if (undefinedCatIssues.length) {
-    warnHtml += '<div>⚠️ categories.csv에 정의되지 않은 카테고리 사용: ' + undefinedCatIssues.join(', ') + '</div>';
-  }
+  if (unknownProjects.length) warnHtml += '<div>⚠️ projects.csv에 없는 프로젝트명이 costs.csv에서 발견됨: ' + unknownProjects.join(', ') + '</div>';
+  if (undefinedCatIssues.length) warnHtml += '<div>⚠️ categories.csv에 정의되지 않은 카테고리 사용: ' + undefinedCatIssues.join(', ') + '</div>';
   warnArea.innerHTML = warnHtml ? '<div class="warn-box">' + warnHtml + '</div>' : '';
 
-  // metrics
   document.getElementById('metrics').innerHTML = [
     {lbl:'총 집행액', val: fmt(grandTotal), sub: allProjects.length + '개 프로젝트'},
     {lbl:'프로젝트 수', val: allProjects.length + '개', sub: '진행중 ' + allProjects.filter(p=>statusMap[p]==='진행중').length + '개'},
@@ -220,24 +467,24 @@ function render() {
     {lbl:'비용 기록 건수', val: costs.length + '건', sub: 'costs.csv 행 수'},
   ].map(m=>`<div class="metric-card"><div class="lbl">${m.lbl}</div><div class="val">${m.val}</div><div class="sub">${m.sub}</div></div>`).join('');
 
-  // 프로젝트 표
-  document.getElementById('tbody-project').innerHTML = allProjects.map(proj => {
+  document.getElementById('tbody-project').innerHTML = allProjects.map((proj, i) => {
     const budget = projBudget[proj] || 0;
     const spent = projTotal[proj] || 0;
     const rate = budget ? ((spent/budget*100).toFixed(1) + '%') : '-';
     const status = statusMap[proj] || '';
     const cats = (projCategories[proj]||[]).join(', ') || '(미정의)';
-    return `<tr>
+    const isKnown = projOrder.includes(proj);
+    return `<tr data-proj-idx="${isKnown ? projects.findIndex(p=>(p['프로젝트명']||'').trim()===proj) : ''}">
       <td>${proj}</td>
       <td>${budget ? fmt(budget) : '-'}</td>
       <td class="num">${fmt(spent)}</td>
       <td>${rate}</td>
       <td>${status ? `<span class="status-badge s-${status}">${status}</span>` : '-'}</td>
       <td class="td-truncate" title="${cats}">${cats}</td>
+      <td>${isKnown ? '<button class="btn-edit" data-edit-proj="1"><i class="ti ti-pencil"></i></button>' : ''}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
 
-  // 카테고리 표
   const catSorted = Object.keys(catTotal).sort((a,b)=>catTotal[b]-catTotal[a]);
   document.getElementById('tbody-category').innerHTML = catSorted.map(cat => {
     const amt = catTotal[cat];
@@ -245,7 +492,6 @@ function render() {
     return `<tr><td>${cat}</td><td class="num">${fmt(amt)}</td><td>${pct}</td></tr>`;
   }).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
 
-  // matrix table
   let mHtml = '<thead><tr><th>프로젝트</th>' + catOrder.map(c=>`<th>${c}</th>`).join('') + '<th>합계</th></tr></thead><tbody>';
   allProjects.forEach(proj => {
     const defined = projCategories[proj] || [];
@@ -264,9 +510,7 @@ function render() {
   mHtml += '</tbody>';
   document.getElementById('matrix-table').innerHTML = mHtml;
 
-  // charts
   const destroy = id => { if (charts[id]) { charts[id].destroy(); delete charts[id]; } };
-  destroy('proj');
   const palette = ['#f97316','#3b82f6','#22c55e','#a855f7','#eab308','#ef4444','#06b6d4','#10b981','#ec4899','#84cc16'];
   destroy('proj');
   charts['proj'] = new Chart(document.getElementById('chart-project').getContext('2d'), {
@@ -281,22 +525,43 @@ function render() {
     options: { responsive:true, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}}}} }
   });
 
-  // raw table + filters
   const fProject = document.getElementById('f-project');
   const fCategory = document.getElementById('f-category');
+  const prevFp = fProject.value, prevFc = fCategory.value;
   fProject.innerHTML = '<option value="">전체 프로젝트</option>' + allProjects.map(p=>`<option>${p}</option>`).join('');
   fCategory.innerHTML = '<option value="">전체 카테고리</option>' + catOrder.map(c=>`<option>${c}</option>`).join('');
+  fProject.value = prevFp; fCategory.value = prevFc;
   renderRaw();
   fProject.onchange = renderRaw;
   fCategory.onchange = renderRaw;
+
+  // 지출 모달의 프로젝트 select 채우기
+  const cProject = document.getElementById('c-project');
+  cProject.innerHTML = projOrder.map(p=>`<option>${p}</option>`).join('');
+  cProject.onchange = updateCostCategoryOptions;
+
+  bindProjectRowButtons();
+}
+
+function updateCostCategoryOptions() {
+  const proj = document.getElementById('c-project').value;
+  const list = document.getElementById('c-category-list');
+  const cats = [];
+  categories.forEach(row => {
+    if ((row['프로젝트명']||'').trim() === proj) {
+      const c = (row['카테고리']||'').trim();
+      if (c && !cats.includes(c)) cats.push(c);
+    }
+  });
+  list.innerHTML = cats.map(c=>`<option value="${c}">`).join('');
 }
 
 function renderRaw() {
   const fp = document.getElementById('f-project').value;
   const fc = document.getElementById('f-category').value;
-  const rows = costs.filter(c => (!fp || (c['프로젝트명']||'').trim()===fp) && (!fc || (c['카테고리']||'').trim()===fc));
-  document.getElementById('tbody-raw').innerHTML = rows.map(c => `
-    <tr>
+  const rows = costs.map((c, i) => ({ c, i })).filter(({c}) => (!fp || (c['프로젝트명']||'').trim()===fp) && (!fc || (c['카테고리']||'').trim()===fc));
+  document.getElementById('tbody-raw').innerHTML = rows.map(({c, i}) => `
+    <tr data-cost-idx="${i}">
       <td>${c['프로젝트명']||'-'}</td>
       <td><span class="badge">${c['카테고리']||'-'}</span></td>
       <td class="td-truncate" title="${c['항목']||''}">${c['항목']||'-'}</td>
@@ -304,7 +569,27 @@ function renderRaw() {
       <td>${c['날짜']||'-'}</td>
       <td>${c['상태'] ? `<span class="status-badge s-${c['상태'].trim()}">${c['상태']}</span>` : '-'}</td>
       <td class="td-truncate" title="${c['비고']||''}">${c['비고']||'-'}</td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
+      <td><button class="btn-edit" data-edit-cost="1"><i class="ti ti-pencil"></i></button></td>
+    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text3)">데이터 없음</td></tr>';
+  bindRawRowButtons();
+}
+
+function bindRawRowButtons() {
+  document.querySelectorAll('[data-cost-idx]').forEach(tr => {
+    const idx = parseInt(tr.getAttribute('data-cost-idx'), 10);
+    const btn = tr.querySelector('[data-edit-cost]');
+    if (btn) btn.onclick = () => openCostModal(costs[idx]);
+  });
+}
+
+function bindProjectRowButtons() {
+  document.querySelectorAll('[data-proj-idx]').forEach(tr => {
+    const idxAttr = tr.getAttribute('data-proj-idx');
+    if (idxAttr === '') return;
+    const idx = parseInt(idxAttr, 10);
+    const btn = tr.querySelector('[data-edit-proj]');
+    if (btn) btn.onclick = () => openProjectModal(projects[idx]);
+  });
 }
 
 function showPage(tab) {
@@ -316,9 +601,167 @@ function showPage(tab) {
   });
 }
 
+// ===== 설정 모달 =====
+function openSettings() {
+  document.getElementById('tokenInput').value = getToken();
+  document.getElementById('settingsMsg').textContent = '';
+  document.getElementById('settingsModal').classList.add('open');
+}
+document.getElementById('settingsBtn').addEventListener('click', openSettings);
+document.getElementById('closeSettings').addEventListener('click', () => document.getElementById('settingsModal').classList.remove('open'));
+document.getElementById('saveTokenBtn').addEventListener('click', () => {
+  const v = document.getElementById('tokenInput').value.trim();
+  setToken(v);
+  document.getElementById('settingsMsg').textContent = '저장되었습니다.';
+  document.getElementById('settingsMsg').className = 'modal-msg ok';
+});
+document.getElementById('clearTokenBtn').addEventListener('click', () => {
+  setToken('');
+  document.getElementById('tokenInput').value = '';
+  document.getElementById('settingsMsg').textContent = '토큰을 삭제했습니다.';
+  document.getElementById('settingsMsg').className = 'modal-msg ok';
+});
+
+function requireTokenOrOpenSettings() {
+  if (!getToken()) {
+    showToast('먼저 설정에서 GitHub 토큰을 입력해주세요');
+    openSettings();
+    return false;
+  }
+  return true;
+}
+
+// ===== 지출 모달 =====
+function openCostModal(existingRow) {
+  editingCost = existingRow || null;
+  document.getElementById('costModalTitle').textContent = existingRow ? '지출 수정' : '새 지출 추가';
+  document.getElementById('deleteCostBtn').style.display = existingRow ? '' : 'none';
+  document.getElementById('costModalMsg').textContent = '';
+  document.getElementById('c-project').value = existingRow ? (existingRow['프로젝트명']||'') : (document.getElementById('c-project').options[0]||{}).value || '';
+  updateCostCategoryOptions();
+  document.getElementById('c-category').value = existingRow ? (existingRow['카테고리']||'') : '';
+  document.getElementById('c-item').value = existingRow ? (existingRow['항목']||'') : '';
+  document.getElementById('c-amount').value = existingRow ? toNum(existingRow['금액']) : '';
+  document.getElementById('c-date').value = existingRow ? (existingRow['날짜']||'') : '';
+  document.getElementById('c-status').value = existingRow ? (existingRow['상태']||'진행중') : '진행중';
+  document.getElementById('c-note').value = existingRow ? (existingRow['비고']||'') : '';
+  document.getElementById('costModal').classList.add('open');
+}
+document.getElementById('addCostBtn').addEventListener('click', () => { if (requireTokenOrOpenSettings()) openCostModal(null); });
+document.getElementById('closeCostModal').addEventListener('click', () => document.getElementById('costModal').classList.remove('open'));
+
+document.getElementById('saveCostBtn').addEventListener('click', async () => {
+  if (!requireTokenOrOpenSettings()) return;
+  const msg = document.getElementById('costModalMsg');
+  const newRow = {
+    '프로젝트명': document.getElementById('c-project').value.trim(),
+    '카테고리': document.getElementById('c-category').value.trim(),
+    '항목': document.getElementById('c-item').value.trim(),
+    '금액': toNum(document.getElementById('c-amount').value),
+    '날짜': document.getElementById('c-date').value,
+    '상태': document.getElementById('c-status').value,
+    '비고': document.getElementById('c-note').value.trim(),
+  };
+  if (!newRow['프로젝트명'] || !newRow['카테고리']) { msg.textContent = '프로젝트와 카테고리는 필수입니다.'; msg.className = 'modal-msg error'; return; }
+  const btn = document.getElementById('saveCostBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>저장중...';
+  try {
+    if (editingCost) await updateCsvRowByMatch('costs.csv', editingCost, newRow, `지출 수정: ${newRow['프로젝트명']} / ${newRow['항목']}`);
+    else await appendCsvRow('costs.csv', newRow, `지출 추가: ${newRow['프로젝트명']} / ${newRow['항목']}`);
+    document.getElementById('costModal').classList.remove('open');
+    showToast('저장되었습니다. 반영까지 몇 초 걸릴 수 있어요.');
+    await loadAll();
+  } catch (e) {
+    msg.textContent = e.message; msg.className = 'modal-msg error';
+  } finally {
+    btn.disabled = false; btn.textContent = '저장';
+  }
+});
+
+document.getElementById('deleteCostBtn').addEventListener('click', async () => {
+  if (!editingCost) return;
+  if (!confirm('이 지출 항목을 삭제할까요?')) return;
+  const msg = document.getElementById('costModalMsg');
+  try {
+    await deleteCsvRowByMatch('costs.csv', editingCost, `지출 삭제: ${editingCost['프로젝트명']} / ${editingCost['항목']}`);
+    document.getElementById('costModal').classList.remove('open');
+    showToast('삭제되었습니다.');
+    await loadAll();
+  } catch (e) {
+    msg.textContent = e.message; msg.className = 'modal-msg error';
+  }
+});
+
+// ===== 프로젝트 모달 =====
+function openProjectModal(existingRow) {
+  editingProject = existingRow || null;
+  document.getElementById('projectModalTitle').textContent = existingRow ? '프로젝트 수정' : '새 프로젝트 추가';
+  document.getElementById('deleteProjectBtn').style.display = existingRow ? '' : 'none';
+  document.getElementById('projectModalMsg').textContent = '';
+  const name = existingRow ? (existingRow['프로젝트명']||'') : '';
+  document.getElementById('p-name').value = name;
+  document.getElementById('p-name').disabled = !!existingRow; // 이름은 카테고리 매칭 키라 수정중엔 잠금
+  document.getElementById('p-start').value = existingRow ? (existingRow['시작일']||'') : '';
+  document.getElementById('p-end').value = existingRow ? (existingRow['종료일']||'') : '';
+  document.getElementById('p-budget').value = existingRow ? toNum(existingRow['총예산']) || '' : '';
+  document.getElementById('p-owner').value = existingRow ? (existingRow['담당자']||'') : '';
+  document.getElementById('p-status').value = existingRow ? (existingRow['상태']||'진행중') : '진행중';
+  const curCats = existingRow ? categories.filter(r => (r['프로젝트명']||'').trim() === name).map(r => (r['카테고리']||'').trim()).filter(Boolean) : [];
+  document.getElementById('p-categories').value = curCats.join(', ');
+  document.getElementById('projectModal').classList.add('open');
+}
+document.getElementById('addProjectBtn').addEventListener('click', () => { if (requireTokenOrOpenSettings()) openProjectModal(null); });
+document.getElementById('closeProjectModal').addEventListener('click', () => document.getElementById('projectModal').classList.remove('open'));
+
+document.getElementById('saveProjectBtn').addEventListener('click', async () => {
+  if (!requireTokenOrOpenSettings()) return;
+  const msg = document.getElementById('projectModalMsg');
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { msg.textContent = '프로젝트명은 필수입니다.'; msg.className = 'modal-msg error'; return; }
+  const newRow = {
+    '프로젝트명': name,
+    '시작일': document.getElementById('p-start').value,
+    '종료일': document.getElementById('p-end').value,
+    '총예산': document.getElementById('p-budget').value ? toNum(document.getElementById('p-budget').value) : '',
+    '담당자': document.getElementById('p-owner').value.trim(),
+    '상태': document.getElementById('p-status').value,
+  };
+  const catList = document.getElementById('p-categories').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const btn = document.getElementById('saveProjectBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>저장중...';
+  try {
+    if (editingProject) await updateCsvRowByMatch('projects.csv', editingProject, newRow, `프로젝트 수정: ${name}`);
+    else await appendCsvRow('projects.csv', newRow, `프로젝트 추가: ${name}`);
+    await syncProjectCategories(name, catList);
+    document.getElementById('projectModal').classList.remove('open');
+    showToast('저장되었습니다. 반영까지 몇 초 걸릴 수 있어요.');
+    await loadAll();
+  } catch (e) {
+    msg.textContent = e.message; msg.className = 'modal-msg error';
+  } finally {
+    btn.disabled = false; btn.textContent = '저장';
+  }
+});
+
+document.getElementById('deleteProjectBtn').addEventListener('click', async () => {
+  if (!editingProject) return;
+  if (!confirm('이 프로젝트와 카테고리 정의를 삭제할까요? (이미 입력된 지출 내역은 지워지지 않습니다)')) return;
+  const msg = document.getElementById('projectModalMsg');
+  try {
+    await deleteCsvRowByMatch('projects.csv', editingProject, `프로젝트 삭제: ${editingProject['프로젝트명']}`);
+    await deleteProjectCategories(editingProject['프로젝트명']);
+    document.getElementById('projectModal').classList.remove('open');
+    showToast('삭제되었습니다.');
+    await loadAll();
+  } catch (e) {
+    msg.textContent = e.message; msg.className = 'modal-msg error';
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
+  updateTokenPill();
   loadAll();
-  document.getElementById('reloadBtn') && document.getElementById('reloadBtn').addEventListener('click', loadAll);
+  document.getElementById('reloadBtn').addEventListener('click', loadAll);
 });
 </script>
 </body>
